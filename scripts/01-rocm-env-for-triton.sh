@@ -1,0 +1,3 @@
+# Required for Strix Halo / RDNA3.5 on vLLM
+export TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL=1
+export VLLM_TARGET_DEVICE=rocm
