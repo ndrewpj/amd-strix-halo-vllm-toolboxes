@@ -98,8 +98,8 @@ ENV ROCM_HOME="/opt/rocm"
 ENV HIP_PATH="/opt/rocm"
 ENV VLLM_TARGET_DEVICE="rocm"
 ENV PYTORCH_ROCM_ARCH="gfx1151"
-ENV HIP_ARCHITECTURES="gfx1151"          # ADDED
-ENV AMDGPU_TARGETS="gfx1151"              # ADDED
+ENV HIP_ARCHITECTURES="gfx1151"          
+ENV AMDGPU_TARGETS="gfx1151"              
 ENV MAX_JOBS="4"
 
 # --- CRITICAL FIX FOR SEGFAULT ---
@@ -110,7 +110,7 @@ ENV CXX="/opt/rocm/llvm/bin/clang++"
 
 RUN export HIP_DEVICE_LIB_PATH=$(find /opt/rocm -type d -name bitcode -print -quit) && \
     echo "Compiling with Bitcode: $HIP_DEVICE_LIB_PATH" && \
-    export CMAKE_ARGS="-DROCM_PATH=/opt/rocm -DHIP_PATH=/opt/rocm -DAMDGPU_TARGETS=gfx1151 -DHIP_ARCHITECTURES=gfx1151" && \   # CHANGED
+    export CMAKE_ARGS="-DROCM_PATH=/opt/rocm -DHIP_PATH=/opt/rocm -DAMDGPU_TARGETS=gfx1151 -DHIP_ARCHITECTURES=gfx1151" && \   
     python -m pip wheel --no-build-isolation --no-deps -w /tmp/dist -v . && \
     python -m pip install /tmp/dist/*.whl
 
