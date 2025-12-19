@@ -6,7 +6,7 @@ RUN dnf -y install --setopt=install_weak_deps=False --nodocs \
   python3.13 python3.13-devel git rsync libatomic bash ca-certificates curl \
   gcc gcc-c++ binutils make ffmpeg-free \
   cmake ninja-build aria2c tar xz vim nano \
-  libdrm-devel zlib-devel openssl-devel \
+  libdrm-devel zlib-devel openssl-devel pgrep \
   numactl-devel gperftools-libs \
   && dnf clean all && rm -rf /var/cache/dnf/*
 
@@ -58,7 +58,7 @@ RUN python -m pip install --upgrade pip wheel packaging "setuptools<80.0.0"
 
 # 5. Install PyTorch (TheRock Nightly)
 RUN python -m pip install \
-  --index-url https://rocm.nightlies.amd.com/v2-staging/gfx1151/ \
+  --index-url https://rocm.nightlies.amd.com/v2/gfx1151/ \
   --pre torch torchaudio torchvision
 
 WORKDIR /opt
