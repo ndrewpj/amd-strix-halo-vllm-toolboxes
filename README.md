@@ -13,6 +13,7 @@ An **Fedora 43** Docker/Podman container that is **Toolbx-compatible** (usable a
 * [3) Quickstart — Ubuntu (Distrobox)](#3-quickstart--ubuntu-distrobox)
 * [4) Testing the API](#4-testing-the-api)
 * [5) Use a Web UI for Chatting](#5-use-a-web-ui-for-chatting)
+* [6) Host Configuration](#6-host-configuration)
 
 
 ## Tested Models (Benchmarks)
@@ -140,4 +141,41 @@ docker run -p 3000:3000 \
   -e OPENAI_API_KEY=dummy \
   -v chat-ui-data:/data \
   ghcr.io/huggingface/chat-ui-db
+```
+
+## 6) Host Configuration
+
+This should work on any Strix Halo. For a complete list of available hardware, see: [Strix Halo Hardware Database](https://strixhalo-homelab.d7.wtf/Hardware)
+
+### 6.1 Test Configuration
+
+| Component         | Specification                                               |
+| :---------------- | :---------------------------------------------------------- |
+| **Test Machine**  | Framework Desktop                                           |
+| **CPU**           | Ryzen AI MAX+ 395 "Strix Halo"                              |
+| **System Memory** | 128 GB RAM                                                  |
+| **GPU Memory**    | 512 MB allocated in BIOS                                    |
+| **Host OS**       | Fedora 42, Linux           6.18.0-0.rc6.vanilla.fc42.x86_64 |
+
+### 6.2 Kernel Parameters (tested on Fedora 42)
+
+Add these boot parameters to enable unified memory while reserving a minimum of 4 GiB for the OS (max 124 GiB for iGPU):
+
+amd_iommu=off amdgpu.gttsize=126976 ttm.pages_limit=32505856
+
+| Parameter                   | Purpose                                                                                    |
+|-----------------------------|--------------------------------------------------------------------------------------------|
+| `amd_iommu=off`             | Disables IOMMU for lower latency                                                           |
+| `amdgpu.gttsize=126976`     | Caps GPU unified memory to 124 GiB; 126976 MiB ÷ 1024 = 124 GiB                            |
+| `ttm.pages_limit=32505856`  | Caps pinned memory to 124 GiB; 32505856 × 4 KiB = 126976 MiB = 124 GiB                     |
+
+Source: https://www.reddit.com/r/LocalLLaMA/comments/1m9wcdc/comment/n5gf53d/?context=3&utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+
+
+**Apply the changes:**
+
+```
+# Edit /etc/default/grub to add parameters to GRUB_CMDLINE_LINUX
+sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+sudo reboot
 ```
