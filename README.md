@@ -155,7 +155,7 @@ This should work on any Strix Halo. For a complete list of available hardware, s
 | **CPU**           | Ryzen AI MAX+ 395 "Strix Halo"                              |
 | **System Memory** | 128 GB RAM                                                  |
 | **GPU Memory**    | 512 MB allocated in BIOS                                    |
-| **Host OS**       | Fedora 42, Linux           6.18.0-0.rc6.vanilla.fc42.x86_64 |
+| **Host OS**       | Fedora 42, Linux 6.18.0-0.rc6.vanilla.fc42.x86_64           |
 
 ### 6.2 Kernel Parameters (tested on Fedora 42)
 
