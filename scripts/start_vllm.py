@@ -184,7 +184,7 @@ def configure_and_launch(model_idx, gpu_count):
         attn_backend = "ROCm" if use_rocm_attn else "Triton"
         
         menu_args = [
-            "--clear", "--backtitle", f"AMD R9700 vLLM Launcher (GPUs: {gpu_count})",
+            "--clear", "--backtitle", f"AMD Strix Halo vLLM Launcher (GPUs: {gpu_count})",
             "--title", f"Configuration: {name}",
             "--menu", "Customize Launch Parameters:", "22", "65", "9",
             "1", f"Tensor Parallelism:   {current_tp}",
