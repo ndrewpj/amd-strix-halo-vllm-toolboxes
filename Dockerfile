@@ -7,7 +7,7 @@ RUN dnf -y install --setopt=install_weak_deps=False --nodocs \
   gcc gcc-c++ binutils make ffmpeg-free \
   cmake ninja-build aria2c tar xz vim nano dialog \
   libdrm-devel zlib-devel openssl-devel pgrep \
-  numactl-devel gperftools-libs \
+  numactl-devel gperftools-libs iproute libibverbs-utils \
   && dnf clean all && rm -rf /var/cache/dnf/*
 
 # 2. Install "TheRock" ROCm SDK (Tarball Method)
@@ -122,6 +122,8 @@ RUN export HIP_DEVICE_LIB_PATH=$(find /opt/rocm -type d -name bitcode -print -qu
   export CMAKE_ARGS="-DROCM_PATH=/opt/rocm -DHIP_PATH=/opt/rocm -DAMDGPU_TARGETS=gfx1151 -DHIP_ARCHITECTURES=gfx1151" && \   
   python -m pip wheel --no-build-isolation --no-deps -w /tmp/dist -v . && \
   python -m pip install /tmp/dist/*.whl
+
+RUN python -m pip install ray
 
 # --- bitsandbytes (ROCm) ---
 WORKDIR /opt
