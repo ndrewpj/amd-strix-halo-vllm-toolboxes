@@ -2,10 +2,11 @@
 
 ## TL;DR
 I am attempting to run vLLM with Tensor Parallelism across two AMD Strix Halo (Ryzen AI MAX+ 395) nodes connected directly via Intel E810-CQDA1 RDMA (RoCE v2).
-**Current Status:** RDMA communication is verified (low latency ~5us). Ray cluster is operational and can allocate tensors on both nodes.
-**Blocker:** vLLM fails with `HIP error: invalid kernel file` when initializing the distributed environment.
-**Suspected Cause:** Possible missing support for `gfx1151` in the RCCL library included with the ROCm nightly build.
-**Goal:** Solicit troubleshooting advice or confirmation if `gfx1151` support is indeed missing/required in RCCL.
+
+- **Current Status:** RDMA communication is verified (low latency ~5us). Ray cluster is operational and can allocate tensors on both nodes.
+- **Blocker:** vLLM fails with `HIP error: invalid kernel file` when initializing the distributed environment.
+- **Suspected Cause:** Possible missing support for `gfx1151` in the RCCL library included with the ROCm nightly build.
+- **Goal:** Solicit troubleshooting advice or confirmation if `gfx1151` support is indeed missing/required in RCCL.
 
 ## Table of Contents
 1. [Context & Goal](#1-context--goal)
