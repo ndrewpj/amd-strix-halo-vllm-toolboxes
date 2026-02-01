@@ -551,8 +551,11 @@
 
             // Sort tests: Throughput first, then others alphabetically
             tests.sort((a, b) => {
-                if (a.name === "Throughput") return -1;
-                if (b.name === "Throughput") return 1;
+                const aTp = a.name.startsWith("Throughput");
+                const bTp = b.name.startsWith("Throughput");
+
+                if (aTp && !bTp) return -1;
+                if (!aTp && bTp) return 1;
                 return a.name.localeCompare(b.name);
             });
 

@@ -130,7 +130,11 @@ COPY scripts/start_vllm_cluster.py /usr/local/bin/start-vllm-cluster
 COPY benchmarks/max_context_results.json /opt/max_context_results.json
 COPY benchmarks/run_vllm_bench.py /opt/run_vllm_bench.py
 COPY benchmarks/vllm_cluster_bench.py /opt/vllm_cluster_bench.py
-RUN chmod 0644 /etc/profile.d/*.sh && chmod +x /usr/local/bin/start-vllm && chmod +x /usr/local/bin/start-vllm-cluster && chmod +x /opt/vllm_cluster_bench.py && chmod 0644 /opt/max_context_results.json
+COPY benchmarks/find_max_context.py /opt/find_max_context.py
+COPY rdma_cluster/compare_eth_vs_rdma.sh /opt/compare_eth_vs_rdma.sh
+COPY scripts/configure_cluster.sh /opt/configure_cluster.sh
+RUN chmod +x /opt/configure_cluster.sh
+RUN chmod 0644 /etc/profile.d/*.sh && chmod +x /usr/local/bin/start-vllm && chmod +x /usr/local/bin/start-vllm-cluster && chmod +x /opt/vllm_cluster_bench.py && chmod +x /opt/compare_eth_vs_rdma.sh && chmod +x /opt/find_max_context.py && chmod 0644 /opt/max_context_results.json
 RUN chmod 0644 /etc/profile.d/*.sh
 RUN printf 'ulimit -S -c 0\n' > /etc/profile.d/90-nocoredump.sh && chmod 0644 /etc/profile.d/90-nocoredump.sh
 
@@ -144,5 +148,12 @@ RUN echo "Installing Custom RCCL..." && \
   # Replace /opt/venv library
   find /opt/venv -name "librccl.so.1" -exec cp -fv /tmp/librccl.so.1 {} + && \
   rm /tmp/librccl.so.1
+
+# 10. Force Upgrade Transformers (User Override)
+# Required for GLM Flash. vLLM reports incompatibility with transformers >= 5, 
+# but this version (5.0.0) has been tested and confirmed working.
+RUN python -m pip install transformers==5.0.0
+
+RUN chmod -R a+rwX /opt
 
 CMD ["/bin/bash"]

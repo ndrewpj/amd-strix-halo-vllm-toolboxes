@@ -76,7 +76,7 @@ MODEL_TABLE = {
         "max_tokens": "32768"
     },
 
-    # 5. Qwen 80B AWQ (The Big One) [NEW]
+    # 5. Qwen 80B AWQ
     # Size: ~48GB. Fits on 2x32GB (64GB). Leftover for Cache: ~16GB.
     # Config: 20k ctx fits in that cache. Eager mode required for stability.
      "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16": {
@@ -176,14 +176,17 @@ def get_model_args(model, tp_size):
     
     return cmd
 
-def run_throughput(model, tp_size):
+def run_throughput(model, tp_size, backend_name="Default", output_dir=RESULTS_DIR, extra_env=None):
     if tp_size not in MODEL_TABLE[model]["valid_tp"]: return
     
     model_safe = model.replace("/", "_")
-    output_file = RESULTS_DIR / f"{model_safe}_tp{tp_size}_throughput.json"
+    output_dir_path = Path(output_dir)
+    output_dir_path.mkdir(parents=True, exist_ok=True)
+    
+    output_file = output_dir_path / f"{model_safe}_tp{tp_size}_throughput.json"
     
     if output_file.exists():
-        log(f"SKIP Throughput {model} (TP={tp_size})")
+        log(f"SKIP {model} (TP={tp_size} | {backend_name})")
         return
 
     dataset_path = get_dataset()
@@ -192,7 +195,7 @@ def run_throughput(model, tp_size):
     # Retrieve Model-Specific Batch Tokens
     batch_tokens = MODEL_TABLE[model].get("max_tokens", DEFAULT_BATCH_TOKENS)
 
-    log(f"START Throughput {model} (TP={tp_size}) [Batch: {batch_tokens}]...")
+    log(f"START {model} (TP={tp_size} | {backend_name}) [Batch: {batch_tokens}]...")
     kill_vllm()
     nuke_vllm_cache()
 
@@ -212,31 +215,43 @@ def run_throughput(model, tp_size):
     # Inject model specific env vars (e.g. for AWQ)
     model_env = MODEL_TABLE[model].get("env", {})
     env.update(model_env)
+    
+    # Extra Env
+    if extra_env:
+        env.update(extra_env)
 
     try: 
         subprocess.run(cmd, check=True, env=env)
     except: 
-        log(f"ERROR: Throughput failed {model}")
-
+        log(f"ERROR: Failed {model} [{backend_name}]")
 
 
 def print_summary(tps):
-    print(f"\n{'MODEL':<40} | {'TP':<2} | {'TOK/S':<8}")
-    print("-" * 60)
+    print(f"\n{'MODEL':<40} | {'TP':<2} | {'Triton':<8} | {'ROCm':<8}")
+    print("-" * 75)
     
     for m in MODELS_TO_RUN:
         msafe = m.replace("/", "_")
         for tp in tps:
             if tp not in MODEL_TABLE[m]["valid_tp"]: continue
             
+            # Default
             try: 
-                tdata = json.loads((RESULTS_DIR / f"{msafe}_tp{tp}_throughput.json").read_text())
-                tok_s = f"{tdata.get('tokens_per_second', 0):.1f}"
-            except: tok_s = "N/A"
+                p1 = RESULTS_DIR / f"{msafe}_tp{tp}_throughput.json"
+                d1 = json.loads(p1.read_text())
+                val1 = f"{d1.get('tokens_per_second', 0):.1f}"
+            except: val1 = "N/A"
+            
+            # ROCm
+            try:
+                p2 = Path("benchmark_results_rocm_attn/benchmark_results") / f"{msafe}_tp{tp}_throughput.json"
+                d2 = json.loads(p2.read_text())
+                val2 = f"{d2.get('tokens_per_second', 0):.1f}"
+            except: val2 = "N/A"
 
             name_cell = m.split('/')[-1]
-            print(f"{name_cell:<40} | {tp:<2} | {tok_s:<8}")
-    print("-" * 60)
+            print(f"{name_cell:<40} | {tp:<2} | {val1:<8} | {val2:<8}")
+    print("-" * 75)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -254,5 +269,13 @@ if __name__ == "__main__":
     kill_vllm()
     for tp in valid_tp_args:
         for m in MODELS_TO_RUN:
-            run_throughput(m, tp)
+            # 1. Default (Triton)
+            run_throughput(m, tp, "Default", RESULTS_DIR)
+            
+            # 2. ROCm Attention
+            run_throughput(m, tp, "ROCm-Attn", "benchmark_results_rocm_attn/benchmark_results", {
+                "VLLM_V1_USE_PREFILL_DECODE_ATTENTION": "1",
+                "VLLM_USE_TRITON_FLASH_ATTN": "0"
+            })
+            
     print_summary(valid_tp_args)

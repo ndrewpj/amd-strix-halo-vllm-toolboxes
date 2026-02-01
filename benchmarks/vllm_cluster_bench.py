@@ -152,22 +152,21 @@ def get_model_args(model):
         
     if config.get("trust_remote"): cmd.append("--trust-remote-code")
     
-    # FORCED EAGER as per request for cluster stability
-    cmd.append("--enforce-eager")
+    # Respect config for Eager Mode (Apple-to-Apples with TP=1)
+    if config.get("enforce_eager"): 
+        cmd.append("--enforce-eager")
     
     return cmd
 
-def run_cluster_throughput(model):
-    # Skip if TP=2 is not valid for this model
-    if CLUSTER_TP not in MODEL_TABLE[model]["valid_tp"]:
-        log(f"SKIP {model} (Support TP={MODEL_TABLE[model]['valid_tp']}, Cluster is TP={CLUSTER_TP})")
-        return
-
+def run_bench_set(model, backend_name, output_dir, extra_env=None):
     model_safe = model.replace("/", "_")
-    output_file = RESULTS_DIR / f"{model_safe}_cluster_tp{CLUSTER_TP}_throughput.json"
+    output_dir_path = Path(output_dir)
+    output_dir_path.mkdir(parents=True, exist_ok=True)
+    
+    output_file = output_dir_path / f"{model_safe}_cluster_tp{CLUSTER_TP}_throughput.json"
     
     if output_file.exists():
-        log(f"SKIP {model} (Result exists)")
+        log(f"SKIP {model} [{backend_name}] (Result exists)")
         return
 
     dataset_path = get_dataset()
@@ -175,14 +174,10 @@ def run_cluster_throughput(model):
     
     batch_tokens = MODEL_TABLE[model].get("max_tokens", DEFAULT_BATCH_TOKENS)
 
-    log(f"START Cluster Bench {model} [TP={CLUSTER_TP} | Eager=True]...")
+    log(f"START {model} [TP={CLUSTER_TP} | {backend_name}]...")
     
-    # Nuke cache between runs to be safe
     nuke_vllm_cache()
 
-    # NOTE: We use 'vllm bench throughput' directly. 
-    # It supports most 'vllm serve' args but we need to ensure it picks up the ray backend.
-    
     cmd = ["vllm", "bench", "throughput"] + get_model_args(model)
     cmd.extend([
         "--num-prompts", str(OFF_NUM_PROMPTS),
@@ -195,43 +190,72 @@ def run_cluster_throughput(model):
 
     env = get_cluster_env()
     
-    # Add model specific envs
+    # Model specific envs
     model_env = MODEL_TABLE[model].get("env", {})
     env.update(model_env)
+    
+    # Run specific envs (e.g. ROCm attention)
+    if extra_env:
+        env.update(extra_env)
 
     try: 
         log(f"Command: {' '.join(cmd)}")
         subprocess.run(cmd, check=True, env=env)
     except subprocess.CalledProcessError as e:
-        log(f"ERROR: Cluster Benchmark failed for {model} (Exit {e.returncode})")
+        log(f"ERROR: Failed {model} [{backend_name}] (Exit {e.returncode})")
     except Exception as e:
         log(f"ERROR: System error: {e}")
 
+def run_cluster_throughput(model):
+    # 1. Default Run (Triton usually, unless global envs set)
+    run_bench_set(
+        model, 
+        "Default", 
+        RESULTS_DIR
+    )
+    
+    # 2. ROCm Attention Run
+    run_bench_set(
+        model,
+        "ROCm-Attn",
+        "benchmark_results_rocm_attn/benchmark_results",
+        extra_env={
+            "VLLM_V1_USE_PREFILL_DECODE_ATTENTION": "1",
+            "VLLM_USE_TRITON_FLASH_ATTN": "0"
+        }
+    )
+
 def print_summary():
-    print(f"\n{'MODEL (Cluster TP=2)':<50} | {'TOK/S':<10}")
-    print("-" * 65)
+    print(f"\n{'MODEL (TP=2)':<50} | {'Triton':<8} | {'ROCm':<8}")
+    print("-" * 75)
     
     for m in MODELS_TO_RUN:
         msafe = m.replace("/", "_")
+        
+        # Default
         try: 
-            tdata = json.loads((RESULTS_DIR / f"{msafe}_cluster_tp{CLUSTER_TP}_throughput.json").read_text())
-            tok_s = f"{tdata.get('tokens_per_second', 0):.1f}"
-        except: 
-            if CLUSTER_TP not in MODEL_TABLE[m]["valid_tp"]:
-                tok_s = "SKIP"
-            else:
-                tok_s = "N/A"
+            p1 = RESULTS_DIR / f"{msafe}_cluster_tp{CLUSTER_TP}_throughput.json"
+            d1 = json.loads(p1.read_text())
+            val1 = f"{d1.get('tokens_per_second', 0):.1f}"
+        except: val1 = "N/A"
+        
+        # ROCm
+        try:
+            p2 = Path("benchmark_results_rocm_attn/benchmark_results") / f"{msafe}_cluster_tp{CLUSTER_TP}_throughput.json"
+            d2 = json.loads(p2.read_text())
+            val2 = f"{d2.get('tokens_per_second', 0):.1f}"
+        except: val2 = "N/A"
 
         name_cell = m.split('/')[-1]
-        print(f"{name_cell:<50} | {tok_s:<10}")
-    print("-" * 65)
+        print(f"{name_cell:<50} | {val1:<8} | {val2:<8}")
+    print("-" * 75)
 
 if __name__ == "__main__":
     if not check_ray_status():
         log("ERROR: Ray Cluster not ready. Please start it with 'start-vllm-cluster' first.")
         sys.exit(1)
         
-    log("Ray Cluster Detected. Starting Benchmarks...")
+    log("Ray Cluster Detected. Starting Benchmarks (Dual Backend)...")
     
     for m in MODELS_TO_RUN:
         run_cluster_throughput(m)

@@ -89,7 +89,7 @@ def parse_logs():
             if "throughput" in fname:
                 tps = data.get("tokens_per_second", 0)
                 run = base_run.copy()
-                run["test"] = "Throughput"
+                run["test"] = f"Throughput (TP{tp})"
                 run["tps_mean"] = tps
                 if tps == 0 or (isinstance(data, dict) and "error" in str(data).lower()): # checking if error string is in json dump
                      run["error"] = True
@@ -111,13 +111,13 @@ def parse_logs():
                 
                 # TTFT
                 r1 = base_run.copy()
-                r1["test"] = f"TTFT @ QPS {qps}"
+                r1["test"] = f"TTFT (TP{tp}) @ QPS {qps}"
                 r1["tps_mean"] = ttft
                 runs.append(r1)
                 
                 # TPOT
                 r2 = base_run.copy()
-                r2["test"] = f"TPOT @ QPS {qps}"
+                r2["test"] = f"TPOT (TP{tp}) @ QPS {qps}"
                 r2["tps_mean"] = tpot
                 runs.append(r2)
 
