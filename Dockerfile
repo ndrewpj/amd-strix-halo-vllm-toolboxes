@@ -163,4 +163,15 @@ RUN chmod 0644 /etc/profile.d/*.sh && chmod +x /usr/local/bin/start-vllm && chmo
 RUN chmod 0644 /etc/profile.d/*.sh
 RUN printf 'ulimit -S -c 0\n' > /etc/profile.d/90-nocoredump.sh && chmod 0644 /etc/profile.d/90-nocoredump.sh
 
+# 9. Install Custom RCCL (gfx1151) - Replaces standard library with manually built one
+COPY custom_libs/librccl.so.1.gz /tmp/librccl.so.1.gz
+RUN echo "Installing Custom RCCL..." && \
+  gzip -d /tmp/librccl.so.1.gz && \
+  chmod 755 /tmp/librccl.so.1 && \
+  # Replace /opt/rocm library strictly as managed_rccl_install.sh does
+  cp -fv /tmp/librccl.so.1 /opt/rocm/lib/librccl.so.1.0 && \
+  # Replace /opt/venv library
+  find /opt/venv -name "librccl.so.1" -exec cp -fv /tmp/librccl.so.1 {} + && \
+  rm /tmp/librccl.so.1
+
 CMD ["/bin/bash"]
