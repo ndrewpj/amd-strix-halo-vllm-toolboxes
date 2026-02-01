@@ -117,6 +117,7 @@ export GLOO_SOCKET_IFNAME=$RDMA_IFACE
 export NCCL_SOCKET_IFNAME=$RDMA_IFACE
 
 # Prevent Ray from masking the APU (Strix Halo Requirement)
+export RAY_DISABLE_METRICS=1
 export RAY_EXPERIMENTAL_NOSET_ROCR_VISIBLE_DEVICES=1
 
 # Start Head
@@ -132,6 +133,7 @@ ray stop --force
 export RDMA_IFACE=$(ip -o addr show to 192.168.100.0/24 | awk '{print $2}' | head -n1)
 export GLOO_SOCKET_IFNAME=$RDMA_IFACE
 export NCCL_SOCKET_IFNAME=$RDMA_IFACE
+export RAY_DISABLE_METRICS=1
 export RAY_EXPERIMENTAL_NOSET_ROCR_VISIBLE_DEVICES=1
 
 ray start --address='192.168.100.1:6379' --num-gpus=1 --num-cpus=8 --disable-usage-stats

@@ -141,6 +141,7 @@ def setup_worker_node(worker_ip, head_ip):
     source /etc/profile
     # Silece the kill command
     ray stop --force > /dev/null 2>&1 || true
+    export RAY_DISABLE_METRICS=1
     export RAY_EXPERIMENTAL_NOSET_ROCR_VISIBLE_DEVICES=1
     export RAY_memory_monitor_refresh_ms=0
     export VLLM_HOST_IP={worker_ip}
@@ -175,6 +176,7 @@ def setup_head_node(head_ip):
     script = f"""
     # Silence the kill command
     ray stop --force > /dev/null 2>&1 || true
+    export RAY_DISABLE_METRICS=1
     export RAY_EXPERIMENTAL_NOSET_ROCR_VISIBLE_DEVICES=1
     export RAY_memory_monitor_refresh_ms=0
     export VLLM_HOST_IP={head_ip}
