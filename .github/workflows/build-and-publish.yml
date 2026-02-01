@@ -59,6 +59,14 @@ jobs:
         with:
           buildkitd-flags: --config /tmp/buildkitd.toml
 
+      - name: Download custom RCCL artifact
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: build-rccl.yml
+          name: librccl-gfx1151
+          path: custom_libs
+          if_no_artifact_found: warn
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:

@@ -1,0 +1,40 @@
+name: build-rccl
+
+on:
+  workflow_dispatch:
+
+env:
+  ROCM_MAJOR_VER: 7
+  GFX: gfx1151
+
+jobs:
+  build-rccl:
+    runs-on: ubuntu-latest
+    container: registry.fedoraproject.org/fedora:43
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Dependencies
+        run: bash scripts/install_deps.sh
+        
+      - name: Install ROCm SDK
+        run: bash scripts/install_rocm_sdk.sh
+        
+      - name: Build RCCL
+        shell: bash
+        run: |
+          source /etc/profile.d/rocm-sdk.sh
+          bash scripts/build_rccl_gfx1151.sh
+          
+      - name: Compress Artifact
+        run: |
+          # Path determined from script logic: rocm-systems/projects/rccl/build_gfx1151/librccl.so.1
+          ls -lh rocm-systems/projects/rccl/build_gfx1151/librccl.so.1
+          gzip -c rocm-systems/projects/rccl/build_gfx1151/librccl.so.1 > librccl.so.1.gz
+          ls -lh librccl.so.1.gz
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: librccl-gfx1151
+          path: librccl.so.1.gz

@@ -2,51 +2,20 @@ FROM registry.fedoraproject.org/fedora:43
 
 # 1. System Base & Build Tools
 # Added 'gperftools-libs' for tcmalloc (fixes double-free)
-RUN dnf -y install --setopt=install_weak_deps=False --nodocs \
-  python3.13 python3.13-devel git rsync libatomic bash ca-certificates curl \
-  gcc gcc-c++ binutils make ffmpeg-free \
-  cmake ninja-build aria2c tar xz vim nano dialog \
-  libdrm-devel zlib-devel openssl-devel pgrep \
-  numactl-devel gperftools-libs iproute libibverbs-utils patch perftest ping iperf3 \
-  && dnf clean all && rm -rf /var/cache/dnf/*
+COPY scripts/install_deps.sh /tmp/install_deps.sh
+RUN sh /tmp/install_deps.sh
 
 # 2. Install "TheRock" ROCm SDK (Tarball Method)
 WORKDIR /tmp
 ARG ROCM_MAJOR_VER=7
 ARG GFX=gfx1151
-RUN set -euo pipefail; \
-  BASE="https://therock-nightly-tarball.s3.amazonaws.com"; \
-  PREFIX="therock-dist-linux-${GFX}-${ROCM_MAJOR_VER}"; \
-  KEY="$(curl -s "${BASE}?list-type=2&prefix=${PREFIX}" \
-  | tr '<' '\n' \
-  | grep -o "therock-dist-linux-${GFX}-${ROCM_MAJOR_VER}\..*\.tar\.gz" \
-  | sort -V | tail -n1)"; \
-  echo "Downloading Latest Tarball: ${KEY}"; \
-  aria2c -x 16 -s 16 -j 16 --file-allocation=none "${BASE}/${KEY}" -o therock.tar.gz; \
-  mkdir -p /opt/rocm; \
-  tar xzf therock.tar.gz -C /opt/rocm --strip-components=1; \
-  rm therock.tar.gz
-
-# 3. Configure Global ROCm Environment
-# We add LD_PRELOAD for tcmalloc here to fix the shutdown crash
-RUN export ROCM_PATH=/opt/rocm && \
-  BITCODE_PATH=$(find /opt/rocm -type d -name bitcode -print -quit) && \
-  printf '%s\n' \
-  "export ROCM_PATH=/opt/rocm" \
-  "export HIP_PLATFORM=amd" \
-  "export HIP_PATH=/opt/rocm" \
-  "export HIP_CLANG_PATH=/opt/rocm/llvm/bin" \
-  "export HIP_DEVICE_LIB_PATH=$BITCODE_PATH" \
-  "export PATH=$ROCM_PATH/bin:$ROCM_PATH/llvm/bin:\$PATH" \
-  "export LD_LIBRARY_PATH=$ROCM_PATH/lib:$ROCM_PATH/lib64:$ROCM_PATH/llvm/lib:\$LD_LIBRARY_PATH" \
-  "export ROCBLAS_USE_HIPBLASLT=1" \
-  "export TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL=1" \
-  "export VLLM_TARGET_DEVICE=rocm" \
-  "export HIP_FORCE_DEV_KERNARG=1" \
-  "export RAY_EXPERIMENTAL_NOSET_ROCR_VISIBLE_DEVICES=1" \
-  "export LD_PRELOAD=/usr/lib64/libtcmalloc_minimal.so.4" \
-  > /etc/profile.d/rocm-sdk.sh && \
-  chmod 0644 /etc/profile.d/rocm-sdk.sh
+# We pass ARGs to the script via ENV or rely on defaults. 
+# But let's be explicit and export them for the RUN command.
+COPY scripts/install_rocm_sdk.sh /tmp/install_rocm_sdk.sh
+RUN chmod +x /tmp/install_rocm_sdk.sh && \
+  export ROCM_MAJOR_VER=$ROCM_MAJOR_VER && \
+  export GFX=$GFX && \
+  /tmp/install_rocm_sdk.sh
 
 # 4. Python Venv Setup
 RUN /usr/bin/python3.13 -m venv /opt/venv
