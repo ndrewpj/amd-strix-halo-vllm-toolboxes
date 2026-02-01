@@ -46,7 +46,17 @@ The `kyuz0/vllm-therock-gfx1151:latest` image can be used both as: 
 
 ## 2) Quickstart — Fedora Toolbx
 
-Create a toolbox that exposes the GPU and relaxes seccomp to avoid ROCm syscall issues:
+**Recommended:** Use the included `refresh_toolbox.sh` script. It pulls the latest image and creates the toolbox with the correct parameters:
+
+```bash
+./refresh_toolbox.sh
+```
+
+> **InfiniBand / RDMA Support:** The script automatically detects if a fast InfiniBand link is active (checks `/dev/infiniband`). If found, it correctly sets up the container to expose these devices, enabling high-performance clustering.
+
+**Manual Creation:**
+
+To manually create a toolbox that exposes the GPU and relaxes seccomp:
 
 ```bash
 toolbox create vllm \
