@@ -7,6 +7,10 @@ on:
         description: "Image tag to publish (e.g. latest)"
         required: true
         default: "latest"
+      rccl_run_id:
+        description: "Run ID of build-rccl to use (leave empty for latest)"
+        required: false
+        default: ""
 
 env:
   IMAGE_REPO: kyuz0/vllm-therock-gfx1151
@@ -64,6 +68,7 @@ jobs:
         with:
           workflow: build-rccl.yml
           name: librccl-gfx1151
+          run_id: ${{ github.event.inputs.rccl_run_id }}
           path: custom_libs
           if_no_artifact_found: warn
 
