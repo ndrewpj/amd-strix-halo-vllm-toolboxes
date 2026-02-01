@@ -125,8 +125,9 @@ RUN chmod -R a+rwX /opt && \
 COPY scripts/01-rocm-env-for-triton.sh /etc/profile.d/01-rocm-env-for-triton.sh
 COPY scripts/99-toolbox-banner.sh /etc/profile.d/99-toolbox-banner.sh
 COPY scripts/zz-venv-last.sh /etc/profile.d/zz-venv-last.sh
-COPY scripts/start_vllm.py /usr/local/bin/start-vllm
-COPY scripts/start_vllm_cluster.py /usr/local/bin/start-vllm-cluster
+COPY scripts/start_vllm.py /opt/start-vllm
+COPY scripts/start_vllm_cluster.py /opt/start-vllm-cluster
+COPY scripts/models.py /opt/models.py
 COPY benchmarks/max_context_results.json /opt/max_context_results.json
 COPY benchmarks/run_vllm_bench.py /opt/run_vllm_bench.py
 COPY benchmarks/vllm_cluster_bench.py /opt/vllm_cluster_bench.py
@@ -134,7 +135,10 @@ COPY benchmarks/find_max_context.py /opt/find_max_context.py
 COPY rdma_cluster/compare_eth_vs_rdma.sh /opt/compare_eth_vs_rdma.sh
 COPY scripts/configure_cluster.sh /opt/configure_cluster.sh
 RUN chmod +x /opt/configure_cluster.sh
-RUN chmod 0644 /etc/profile.d/*.sh && chmod +x /usr/local/bin/start-vllm && chmod +x /usr/local/bin/start-vllm-cluster && chmod +x /opt/vllm_cluster_bench.py && chmod +x /opt/compare_eth_vs_rdma.sh && chmod +x /opt/find_max_context.py && chmod 0644 /opt/max_context_results.json
+RUN chmod +x /opt/start-vllm /opt/start-vllm-cluster /opt/vllm_cluster_bench.py /opt/compare_eth_vs_rdma.sh /opt/find_max_context.py /opt/run_vllm_bench.py && \
+  ln -s /opt/start-vllm /usr/local/bin/start-vllm && \
+  ln -s /opt/start-vllm-cluster /usr/local/bin/start-vllm-cluster && \
+  chmod 0644 /etc/profile.d/*.sh /opt/max_context_results.json /opt/models.py
 RUN chmod 0644 /etc/profile.d/*.sh
 RUN printf 'ulimit -S -c 0\n' > /etc/profile.d/90-nocoredump.sh && chmod 0644 /etc/profile.d/90-nocoredump.sh
 

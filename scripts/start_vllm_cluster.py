@@ -13,16 +13,20 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 BENCH_DIR = SCRIPT_DIR.parent / "benchmarks"
 OPT_DIR = Path("/opt")
 
+
 # Check /opt first (Container), then local fallback
 if (OPT_DIR / "run_vllm_bench.py").exists():
     sys.path.append(str(OPT_DIR))
 else:
     sys.path.append(str(BENCH_DIR))
+    sys.path.append(str(SCRIPT_DIR))
 
 try:
-    from run_vllm_bench import MODEL_TABLE, MODELS_TO_RUN
+    import models
+    MODEL_TABLE = models.MODEL_TABLE
+    MODELS_TO_RUN = models.MODELS_TO_RUN
 except ImportError:
-    print("Error: Could not import run_vllm_bench.py config.")
+    print("Error: Could not import models.py config.")
     sys.exit(1)
 
 if (OPT_DIR / "max_context_results.json").exists():

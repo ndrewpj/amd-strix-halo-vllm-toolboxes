@@ -25,12 +25,21 @@ RESULTS_DIR.mkdir(exist_ok=True)
 # Since this is a new file in root/benchmarks? No, likely scripts/ or same dir.
 # Let's assume it's in the same dir as run_vllm_bench.py.
 
+
 try:
-    from run_vllm_bench import MODEL_TABLE, MODELS_TO_RUN
+    import models
 except ImportError:
-    # Fallback if run directly and path issues
-    sys.path.append(os.path.dirname(__file__))
-    from run_vllm_bench import MODEL_TABLE, MODELS_TO_RUN
+    # If in /opt, this should work if path includes ., otherwise:
+    sys.path.append(os.getcwd())
+    try:
+        import models
+        # Also try parent/scripts for local dev if above failed?
+    except ImportError:
+        sys.path.append(str(Path(__file__).parent.parent / "scripts"))
+        import models
+        
+MODEL_TABLE = models.MODEL_TABLE
+MODELS_TO_RUN = models.MODELS_TO_RUN
 
 # =========================
 # UTILS (Adapted for Cluster)
