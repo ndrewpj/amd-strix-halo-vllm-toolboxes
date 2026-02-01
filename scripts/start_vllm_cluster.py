@@ -148,6 +148,9 @@ def setup_worker_node(worker_ip, head_ip):
     export RDMA_IFACE=$(ip -o addr show to {subnet} | awk '{{print $2}}' | head -n1)
     export NCCL_SOCKET_IFNAME=$RDMA_IFACE
     export GLOO_SOCKET_IFNAME=$RDMA_IFACE
+    # Stability for RDMA
+    export NCCL_IB_TIMEOUT=23
+    export NCCL_IB_RETRY_CNT=7
     echo "Starting Ray Worker on {worker_ip} connecting to {head_ip}..."
     ray start --address='{head_ip}:6379' --num-gpus=1 --num-cpus=8 --disable-usage-stats
     """
@@ -183,6 +186,9 @@ def setup_head_node(head_ip):
     export RDMA_IFACE=$(ip -o addr show to {subnet} | awk '{{print $2}}' | head -n1)
     export NCCL_SOCKET_IFNAME=$RDMA_IFACE
     export GLOO_SOCKET_IFNAME=$RDMA_IFACE
+    # Stability for RDMA
+    export NCCL_IB_TIMEOUT=23
+    export NCCL_IB_RETRY_CNT=7
     echo "Starting Ray Head on {head_ip}..."
     ray start --head --port=6379 --node-ip-address={head_ip} --num-gpus=1 --num-cpus=8 --disable-usage-stats
     """

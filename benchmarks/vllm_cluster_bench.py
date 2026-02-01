@@ -181,6 +181,10 @@ def get_cluster_env():
     env["NCCL_IB_DISABLE"] = "0"
     env["NCCL_NET_GDR_LEVEL"] = "0"
     
+    # Stability for RDMA (Fix for high-throughput models like Gemma 3)
+    env["NCCL_IB_TIMEOUT"] = "23"  # ~32 seconds (default is 18/~1s)
+    env["NCCL_IB_RETRY_CNT"] = "7" # Default is 3, increase for lossy networks
+    
     return env
 
 def get_model_args(model):
