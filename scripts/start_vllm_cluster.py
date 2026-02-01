@@ -98,159 +98,40 @@ def run_dialog(args):
 def show_info(title, msg):
     run_dialog(["--title", title, "--msgbox", msg, "12", "60"])
 
+
+# Import Shared Cluster Manager
+try:
+    import cluster_manager
+except ImportError:
+    # Try importing from current directory if script is run directly
+    sys.path.append(str(Path(__file__).parent))
+    import cluster_manager
+
+# Delegate Functions to Cluster Manager
 def get_subnet_from_ip(ip):
-    """Accurately gets the /24 subnet string for the given IP."""
-    parts = ip.split('.')
-    return f"{parts[0]}.{parts[1]}.{parts[2]}.0/24"
-
-def setup_ips_dialog(current_head, current_worker):
-    """
-    Uses dialog --form to let user edit Head and Worker IPs simultaneously.
-    Returns (new_head, new_worker) or None if cancelled.
-    """
-    # Layout:
-    # Label 1 (Head) at 1,1
-    # Input 1 at 1,20
-    # Label 2 (Worker) at 2,1
-    # Input 2 at 2,20
-    
-    cmd = [
-        "dialog",
-        "--title", "Configure Cluster IPs",
-        "--form", "Edit the IP addresses for the Cluster nodes:",
-        "10", "60", "2",
-        "Head Node IP:", "1", "1", current_head, "1", "20", "20", "0",
-        "Worker Node IP:", "2", "1", current_worker, "2", "20", "20", "0"
-    ]
-    
-    try:
-        # dialog --form outputs to stderr: "field1\nfield2\n..."
-        res = subprocess.run(cmd, stderr=subprocess.PIPE, check=True, text=True)
-        lines = res.stderr.strip().split('\n')
-        if len(lines) >= 2:
-            return lines[0], lines[1]
-    except subprocess.CalledProcessError:
-        return None
-    return None
-
-def setup_worker_node(worker_ip, head_ip): 
-    subnet = get_subnet_from_ip(worker_ip)
-    
-    # Script to run on worker
-    script = f"""
-    source /etc/profile
-    # Silece the kill command
-    ray stop --force > /dev/null 2>&1 || true
-    export RAY_DISABLE_METRICS=1
-    export RAY_EXPERIMENTAL_NOSET_ROCR_VISIBLE_DEVICES=1
-    export RAY_memory_monitor_refresh_ms=0
-    export VLLM_HOST_IP={worker_ip}
-    export RDMA_IFACE=$(ip -o addr show to {subnet} | awk '{{print $2}}' | head -n1)
-    export NCCL_SOCKET_IFNAME=$RDMA_IFACE
-    export GLOO_SOCKET_IFNAME=$RDMA_IFACE
-    # Stability for RDMA
-    export NCCL_IB_TIMEOUT=23
-    export NCCL_IB_RETRY_CNT=7
-    echo "Starting Ray Worker on {worker_ip} connecting to {head_ip}..."
-    ray start --address='{head_ip}:6379' --num-gpus=1 --num-cpus=8 --disable-usage-stats
-    """
-    
-    print(f"Setting up Worker Node ({worker_ip})...")
-    
-    # Use bash -s to read script from stdin
-    # Command: ssh user@host "toolbox run -c vllm -- bash -s"
-    ssh_cmd = [
-        "ssh", "-o", "StrictHostKeyChecking=no", worker_ip, 
-        "toolbox run -c vllm -- bash -s"
-    ]
-    
-    try:
-        subprocess.run(ssh_cmd, input=script.encode(), check=True)
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to setup worker: {e}")
-        return False
-
-def setup_head_node(head_ip):
-    subnet = get_subnet_from_ip(head_ip)
-    
-    print(f"Setting up Head Node ({head_ip})...")
-    
-    script = f"""
-    # Silence the kill command
-    ray stop --force > /dev/null 2>&1 || true
-    export RAY_DISABLE_METRICS=1
-    export RAY_EXPERIMENTAL_NOSET_ROCR_VISIBLE_DEVICES=1
-    export RAY_memory_monitor_refresh_ms=0
-    export VLLM_HOST_IP={head_ip}
-    export RDMA_IFACE=$(ip -o addr show to {subnet} | awk '{{print $2}}' | head -n1)
-    export NCCL_SOCKET_IFNAME=$RDMA_IFACE
-    export GLOO_SOCKET_IFNAME=$RDMA_IFACE
-    # Stability for RDMA
-    export NCCL_IB_TIMEOUT=23
-    export NCCL_IB_RETRY_CNT=7
-    echo "Starting Ray Head on {head_ip}..."
-    ray start --head --port=6379 --node-ip-address={head_ip} --num-gpus=1 --num-cpus=8 --disable-usage-stats
-    """
-    
-    try:
-        # Run locally
-        subprocess.run(["bash", "-s"], input=script.encode(), check=True)
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to setup head: {e}")
-        return False
+    return cluster_manager.get_subnet_from_ip(ip)
 
 def check_ray_status():
-    """Returns (active_nodes, total_gpus) parsing 'ray status' output roughly."""
-    try:
-        res = subprocess.run(["ray", "status"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        if res.returncode != 0:
-            return 0, 0
-            
-        output = res.stdout
-        active_nodes = 0
-        in_active_section = False
-        for line in output.splitlines():
-            if "Active:" in line:
-                in_active_section = True
-                continue
-            if "Pending:" in line or "Recent failures:" in line:
-                in_active_section = False
-            
-            if in_active_section and line.strip().startswith("1 node_"):
-                active_nodes += 1
-                
-        return active_nodes, 2 # Assume 2 GPUs as per success criteria
-    except:
-        return 0, 0
+    return cluster_manager.check_ray_status()
 
 def wait_for_cluster():
-    print("Waiting for Ray cluster to initialize (expecting 2 nodes)...")
-    for i in range(30):
-        nodes, gpus = check_ray_status()
-        print(f"Check {i+1}/30: Active Nodes={nodes}")
-        if nodes >= 2:
-            print("Cluster is Ready!")
-            time.sleep(2)
-            return True
-        time.sleep(2)
-        
-    print("Timeout waiting for cluster.")
-    return False
+    return cluster_manager.wait_for_cluster()
 
 def nuke_vllm_cache():
-    """Removes vLLM cache directory."""
-    cache = Path.home() / ".cache" / "vllm"
-    if cache.exists():
-        try:
-            print(f"Clearing vLLM cache at {cache}...", end="", flush=True)
-            subprocess.run(["rm", "-rf", str(cache)], check=True)
-            cache.mkdir(parents=True, exist_ok=True)
-            print(" Done.")
-            time.sleep(1)
-        except Exception as e:
-            print(f" Failed: {e}")
+    # Only nukes local cache on the head node for now, or use cluster nuke?
+    # The original script just did local nuke.
+    # cluster_manager has nuke_vllm_cache_on_node and nuke_vllm_cache_cluster
+    # Let's use the local ip one effectively
+    rdma = cluster_manager.get_net_iface()
+    local = cluster_manager.get_local_ip(rdma)
+    cluster_manager.nuke_vllm_cache_on_node(local, is_local=True)
+
+def setup_worker_node(worker_ip, head_ip):
+    return cluster_manager.setup_worker_node(worker_ip, head_ip)
+
+def setup_head_node(head_ip):
+    return cluster_manager.setup_head_node(head_ip)
+
 
 def get_verified_config(model_id, tp_size, max_seqs):
     """Reads max_context_results.json."""

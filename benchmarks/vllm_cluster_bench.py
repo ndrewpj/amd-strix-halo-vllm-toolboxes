@@ -45,107 +45,56 @@ MODELS_TO_RUN = models.MODELS_TO_RUN
 # UTILS (Adapted for Cluster)
 # =========================
 
+
+# =========================
+# CLUSTER MANAGER INTEGRATION
+# =========================
+try:
+    import cluster_manager
+except ImportError:
+    sys.path.append(str(Path(__file__).parent.parent / "scripts"))
+    import cluster_manager
+
+# Defaults for Cluster
+HEAD_IP = os.getenv("VLLM_HEAD_IP", "192.168.100.1")
+WORKER_IP = os.getenv("VLLM_WORKER_IP", "192.168.100.2")
+
 def log(msg): print(f"\n[CLUSTER-BENCH] {msg}")
 
-def get_ray_nodes():
-    """Returns a list of active Ray node IPs."""
-    try:
-        res = subprocess.run(["ray", "status"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        if res.returncode != 0:
-            return []
-            
-        nodes = []
-        in_active_section = False
-        for line in res.stdout.splitlines():
-            if "Active:" in line:
-                in_active_section = True
-                continue
-            if "Pending:" in line or "Recent failures:" in line:
-                in_active_section = False
-            
-            if in_active_section:
-                # Look for "1 node_<IP>" pattern
-                # Existing logic checked for startswith("1 node_")
-                # We use regex to be robust and capture the IP
-                match = re.search(r"node_(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", line)
-                if match:
-                    nodes.append(match.group(1))
-                
-        return nodes
-    except:
-        return []
+def restart_cluster():
+    log("Restarting Ray Cluster (Clean State)...")
+    
+    # 1. Stop Cluster (Best Effort)
+    cluster_manager.stop_cluster()
+    
+    # 2. Start Head
+    if not cluster_manager.setup_head_node(HEAD_IP):
+        log("ERROR: Failed to start HEAD node.")
+        sys.exit(1)
+        
+    # 3. Start Worker
+    # Give head a moment
+    time.sleep(5)
+    if not cluster_manager.setup_worker_node(WORKER_IP, HEAD_IP):
+        log("ERROR: Failed to start WORKER node.")
+        sys.exit(1)
+        
+    # 4. Wait
+    if not cluster_manager.wait_for_cluster():
+        log("ERROR: Cluster failed to initialize.")
+        sys.exit(1)
+        
+    log("Cluster Ready.")
 
-def check_ray_status():
-    """Checks if Ray cluster is active with at least 2 nodes."""
-    nodes = get_ray_nodes()
-    return len(nodes) >= 2
-
-def get_net_iface(ip_prefix="192.168.100"):
-    """
-    Auto-detects the interface that serves the cluster network.
-    Assumes standard 192.168.100.x setup from start_vllm_cluster.py
-    """
-    try:
-        # ip -o addr show | grep 192.168.100
-        cmd = f"ip -o addr show | grep {ip_prefix}"
-        res = subprocess.check_output(cmd, shell=True, text=True).strip()
-        # Output format: 2: eth0    inet 192.168.100.1/24 ...
-        parts = res.split()
-        if len(parts) >= 2:
-            return parts[1] # Interface name
-    except:
-        pass
-    return "eth0" # Fallback
+def get_net_iface():
+    return cluster_manager.get_net_iface()
 
 def get_local_ip(iface):
-    try:
-        cmd = f"ip -o -4 addr show {iface} | awk '{{print $4}}' | cut -d/ -f1"
-        return subprocess.check_output(cmd, shell=True, text=True).strip()
-    except:
-        return "127.0.0.1"
-
-def nuke_vllm_cache_on_node(ip, is_local=False):
-    """Clears vLLM cache on a specific node."""
-    cmd_str = f"Locally" if is_local else f"on {ip}"
-    print(f"Clearing vLLM cache {cmd_str}...", end="", flush=True)
-    
-    try:
-        if is_local:
-            cache = Path.home() / ".cache" / "vllm"
-            if cache.exists():
-                subprocess.run(["rm", "-rf", str(cache)], check=True)
-                cache.mkdir(parents=True, exist_ok=True)
-        else:
-            # Remote SSH
-            ssh_cmd = [
-                "ssh", "-o", "StrictHostKeyChecking=no", ip,
-                "rm -rf ~/.cache/vllm && mkdir -p ~/.cache/vllm"
-            ]
-            subprocess.run(ssh_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            
-        print(" Done.")
-    except Exception as e:
-        print(f" Failed ({e}).")
+    return cluster_manager.get_local_ip(iface)
 
 def nuke_vllm_cache():
-    """Clears vLLM cache on ALL cluster nodes."""
-    nodes = get_ray_nodes()
-    rdma_iface = get_net_iface()
-    local_ip = get_local_ip(rdma_iface)
-    
-    # If no nodes found (unexpected if we are running bench), try just local
-    if not nodes:
-        nuke_vllm_cache_on_node(local_ip, is_local=True)
-        return
+    cluster_manager.nuke_vllm_cache_cluster()
 
-    for node_ip in nodes:
-        # Check if node is local
-        # Simple string match, but IPs might vary (localhost vs 192.168...)
-        # We trust get_local_ip returns the IP used in the cluster (192.168.100.x)
-        is_local = (node_ip == local_ip) or (node_ip == "127.0.0.1")
-        nuke_vllm_cache_on_node(node_ip, is_local)
-
-    time.sleep(2)
 
 def get_dataset():
     # Same as original
@@ -261,7 +210,8 @@ def run_bench_set(model, backend_name, output_dir, extra_env=None):
         log(f"ERROR: System error: {e}")
 
 def run_cluster_throughput(model):
-    # 1. Default Run (Triton usually, unless global envs set)
+    # 1. Default Run (Triton)
+    restart_cluster()
     run_bench_set(
         model, 
         "Default", 
@@ -269,6 +219,7 @@ def run_cluster_throughput(model):
     )
     
     # 2. ROCm Attention Run
+    restart_cluster()
     run_bench_set(
         model,
         "ROCm-Attn",
@@ -278,6 +229,7 @@ def run_cluster_throughput(model):
             "VLLM_USE_TRITON_FLASH_ATTN": "0"
         }
     )
+
 
 def print_summary():
     print(f"\n{'MODEL (TP=2)':<50} | {'Triton':<8} | {'ROCm':<8}")
@@ -305,9 +257,12 @@ def print_summary():
     print("-" * 75)
 
 if __name__ == "__main__":
-    if not check_ray_status():
-        log("ERROR: Ray Cluster not ready. Please start it with 'start-vllm-cluster' first.")
-        sys.exit(1)
+    # if not check_ray_status():
+    #     log("ERROR: Ray Cluster not ready. Please start it with 'start-vllm-cluster' first.")
+    #     sys.exit(1)
+    # We now handle this by restarting the cluster ourselves.
+    pass
+
         
     log("Ray Cluster Detected. Starting Benchmarks (Dual Backend)...")
     

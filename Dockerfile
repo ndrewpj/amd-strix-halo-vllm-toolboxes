@@ -127,6 +127,7 @@ COPY scripts/99-toolbox-banner.sh /etc/profile.d/99-toolbox-banner.sh
 COPY scripts/zz-venv-last.sh /etc/profile.d/zz-venv-last.sh
 COPY scripts/start_vllm.py /opt/start-vllm
 COPY scripts/start_vllm_cluster.py /opt/start-vllm-cluster
+COPY scripts/cluster_manager.py /opt/cluster_manager.py
 COPY scripts/models.py /opt/models.py
 COPY benchmarks/max_context_results.json /opt/max_context_results.json
 COPY benchmarks/run_vllm_bench.py /opt/run_vllm_bench.py
@@ -135,6 +136,7 @@ COPY benchmarks/find_max_context.py /opt/find_max_context.py
 COPY rdma_cluster/compare_eth_vs_rdma.sh /opt/compare_eth_vs_rdma.sh
 COPY scripts/configure_cluster.sh /opt/configure_cluster.sh
 RUN chmod +x /opt/configure_cluster.sh
+
 RUN chmod +x /opt/start-vllm /opt/start-vllm-cluster /opt/vllm_cluster_bench.py /opt/compare_eth_vs_rdma.sh /opt/find_max_context.py /opt/run_vllm_bench.py && \
   ln -s /opt/start-vllm /usr/local/bin/start-vllm && \
   ln -s /opt/start-vllm-cluster /usr/local/bin/start-vllm-cluster && \
