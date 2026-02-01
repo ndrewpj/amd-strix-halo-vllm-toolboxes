@@ -92,6 +92,8 @@ printf 'Repo   : https://github.com/kyuz0/amd-strix-halo-vllm-toolboxes\n'
 printf 'Image  : docker.io/kyuz0/vllm-therock-gfx1151:latest\n\n'
 printf 'Included:\n'
 printf '  - %-16s → %s\n' "start-vllm (TUI)" "Interactive launcher: Model select, Multi-GPU & Cache handling"
+printf '  - %-16s → %s\n' "start-vllm-cluster" "Cluster launcher: Setup Ray Head/Worker & Launch vLLM RCCL"
+printf '  - %-16s → %s\n' "vllm-cluster-bench" "Cluster Benchmark: TP=2, Auto-detected Env, JSON Results"
 printf '  - %-16s → %s\n' "vLLM server" "vllm serve meta-llama/Meta-Llama-3.1-8B-Instruct"
 printf '  - %-16s → %s\n' "API test"    "curl localhost:8000/v1/chat/completions"
 echo

@@ -91,11 +91,11 @@ MODEL_TABLE = {
 }
 
 MODELS_TO_RUN = [
-    #"meta-llama/Meta-Llama-3.1-8B-Instruct",
-    #"google/gemma-3-12b-it",
-    #"Qwen/Qwen3-14B-AWQ",
-    #"openai/gpt-oss-20b",
-    #"openai/gpt-oss-120b",
+    "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "google/gemma-3-12b-it",
+    "Qwen/Qwen3-14B-AWQ",
+    "openai/gpt-oss-20b",
+    "openai/gpt-oss-120b",
     "cpatonn/Qwen3-Coder-30B-A3B-Instruct-GPTQ-4bit",
     "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16",
 ]
@@ -112,14 +112,6 @@ def get_gpu_count():
         # Output format: "GPU[0] : Device Name: ..."
         res = subprocess.run(["rocm-smi", "--showid"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         if res.returncode == 0:
-            # Filter specifically for the target GPU as requested
-            # target_gpu = "AMD Radeon AI PRO R9700"
-            # count = 0
-            # for line in res.stdout.strip().split('\n'):
-            #     if "Device Name" in line and target_gpu in line:
-            #         count += 1
-            
-            # return count if count > 0 else 1
             return 1 # Force return 1 for Strix Halo APU
         else:
             log("rocm-smi failed, defaulting to 1 GPU (Hardcoded Fallback)")
