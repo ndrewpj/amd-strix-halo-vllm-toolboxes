@@ -16,7 +16,7 @@ OFF_NUM_PROMPTS      = 200
 OFF_FORCED_OUTPUT    = "512"
 DEFAULT_BATCH_TOKENS = "8192"
 
-RESULTS_DIR = Path("cluster_benchmark_results")
+RESULTS_DIR = Path("benchmark_results")
 RESULTS_DIR.mkdir(exist_ok=True)
 
 # Reuse the model table from the main benchmark script
@@ -93,7 +93,8 @@ def get_local_ip(iface):
     return cluster_manager.get_local_ip(iface)
 
 def nuke_vllm_cache():
-    cluster_manager.nuke_vllm_cache_cluster()
+    # We use explicit IPs because ray status might return Hex IDs which we can't SSH to.
+    cluster_manager.nuke_vllm_cache_cluster(nodes=[HEAD_IP, WORKER_IP])
 
 
 def get_dataset():
@@ -223,7 +224,7 @@ def run_cluster_throughput(model):
     run_bench_set(
         model,
         "ROCm-Attn",
-        "benchmark_results_rocm_attn/benchmark_results",
+        "benchmark_results_rocm",
         extra_env={
             "VLLM_V1_USE_PREFILL_DECODE_ATTENTION": "1",
             "VLLM_USE_TRITON_FLASH_ATTN": "0"
@@ -247,7 +248,7 @@ def print_summary():
         
         # ROCm
         try:
-            p2 = Path("benchmark_results_rocm_attn/benchmark_results") / f"{msafe}_cluster_tp{CLUSTER_TP}_throughput.json"
+            p2 = Path("benchmark_results_rocm") / f"{msafe}_cluster_tp{CLUSTER_TP}_throughput.json"
             d2 = json.loads(p2.read_text())
             val2 = f"{d2.get('tokens_per_second', 0):.1f}"
         except: val2 = "N/A"

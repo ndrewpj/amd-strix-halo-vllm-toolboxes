@@ -126,9 +126,12 @@ def get_ray_nodes():
                 in_active_section = False
             
             if in_active_section:
-                match = re.search(r"node_(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", line)
+                # Match "1 node_<ID_OR_IP>"
+                # We relax regex to accept hex IDs or IPs
+                match = re.search(r"node_([a-zA-Z0-9\.\-_]+)", line)
                 if match:
                     nodes.append(match.group(1))
+
                 
         return nodes
     except:
@@ -179,15 +182,19 @@ def nuke_vllm_cache_on_node(ip, is_local=False):
     except Exception as e:
         print(f" Failed ({e}).")
 
-def nuke_vllm_cache_cluster():
-    """Clears vLLM cache on ALL cluster nodes."""
-    nodes = get_ray_nodes()
-    # Assuming we are running on Head, which is one of the nodes.
-    # We need to detect which IP is "local"
-    # Or just run 'ray stop' first? 
-    # The requirement is often to clear cache BEFORE start or between runs.
-    # If ray is down, 'get_ray_nodes' returns empty. 
-    # So this is best used when cluster is UP.
+def nuke_vllm_cache_cluster(nodes=None):
+    """
+    Clears vLLM cache on cluster nodes.
+    If 'nodes' (list of IPs) is provided, uses those.
+    Otherwise attempts to discover from ray status (which may fail if status shows Hex IDs and not IPs).
+    """
+    if nodes is None:
+        nodes = get_ray_nodes()
+    
+    # Check if nodes look like IPs before trying SSH
+    # If we only have Hex IDs, we can't SSH unless we map them.
+    # For now, we filter for things that look like IPs if we are relying on discovery
+    # But if user passed explicit list, we assume they are IPs.
     
     rdma_iface = get_net_iface()
     local_ip = get_local_ip(rdma_iface)
@@ -197,8 +204,22 @@ def nuke_vllm_cache_cluster():
         nuke_vllm_cache_on_node(local_ip, is_local=True)
         return
 
+    import re
+    ip_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+
     for node_ip in nodes:
+        # If discovered node is NOT an IP (e.g. Hex ID), we warn and skip remote nuke
+        # unless it is '127.0.0.1' or we can determine it is local.
+        
+        is_ip = ip_pattern.match(node_ip) or node_ip == "localhost"
+        
+        if not is_ip:
+            # Maybe it's a Hex ID. We can't SSH to a Hex ID.
+            print(f"Skipping cache clear on '{node_ip}' (Not an IP address).")
+            continue
+            
         is_local = (node_ip == local_ip) or (node_ip == "127.0.0.1")
         nuke_vllm_cache_on_node(node_ip, is_local)
 
     time.sleep(2)
+

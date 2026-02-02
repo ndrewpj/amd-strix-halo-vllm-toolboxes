@@ -181,7 +181,7 @@ def print_summary(tps):
             
             # ROCm
             try:
-                p2 = Path("benchmark_results_rocm_attn/benchmark_results") / f"{msafe}_tp{tp}_throughput.json"
+                p2 = Path("benchmark_results_rocm") / f"{msafe}_tp{tp}_throughput.json"
                 d2 = json.loads(p2.read_text())
                 val2 = f"{d2.get('tokens_per_second', 0):.1f}"
             except: val2 = "N/A"
@@ -210,7 +210,7 @@ if __name__ == "__main__":
             run_throughput(m, tp, "Default", RESULTS_DIR)
             
             # 2. ROCm Attention
-            run_throughput(m, tp, "ROCm-Attn", "benchmark_results_rocm_attn/benchmark_results", {
+            run_throughput(m, tp, "ROCm-Attn", "benchmark_results_rocm", {
                 "VLLM_V1_USE_PREFILL_DECODE_ATTENTION": "1",
                 "VLLM_USE_TRITON_FLASH_ATTN": "0"
             })

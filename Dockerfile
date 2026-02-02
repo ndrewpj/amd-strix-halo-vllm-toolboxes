@@ -129,6 +129,7 @@ COPY scripts/start_vllm.py /opt/start-vllm
 COPY scripts/start_vllm_cluster.py /opt/start-vllm-cluster
 COPY scripts/cluster_manager.py /opt/cluster_manager.py
 COPY scripts/models.py /opt/models.py
+
 COPY benchmarks/max_context_results.json /opt/max_context_results.json
 COPY benchmarks/run_vllm_bench.py /opt/run_vllm_bench.py
 COPY benchmarks/vllm_cluster_bench.py /opt/vllm_cluster_bench.py
