@@ -1,5 +1,12 @@
 # Issue Report: vLLM Tensor Parallelism over RDMA on AMD Strix Halo
 
+> **✅ RESOLVED (Feb 2, 2026)**
+> This issue is **SOLVED**. The root cause was indeed missing `gfx1151` support in the upstream RCCL library.
+>
+> I have patched and built a custom version of RCCL with native `gfx1151` support. This patched library is **now included** in the toolbox container provided by this repository (`kyuz0/vllm-therock-gfx1151`).
+>
+> See the [RDMA Cluster Setup Guide](setup_guide.md) for instructions on how to run the cluster using the fixed container.
+
 ## TL;DR
 I am attempting to run vLLM with Tensor Parallelism across two AMD Strix Halo (Ryzen AI MAX+ 395) nodes connected directly via Intel E810-CQDA1 RDMA (RoCE v2).
 

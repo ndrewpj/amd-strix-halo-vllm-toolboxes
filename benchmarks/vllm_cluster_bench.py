@@ -158,7 +158,8 @@ def get_model_args(model):
         
     if config.get("trust_remote"): cmd.append("--trust-remote-code")
     
-    if config.get("enforce_eager"): cmd.append("--enforce-eager")
+    # Force eager mode for cluster stability
+    cmd.append("--enforce-eager")
     
     return cmd
 
@@ -266,6 +267,7 @@ if __name__ == "__main__":
 
         
     log("Ray Cluster Detected. Starting Benchmarks (Dual Backend)...")
+    log("Note: Eager Mode (--enforce-eager) is ENABLED for cluster stability.")
     
     for m in MODELS_TO_RUN:
         run_cluster_throughput(m)

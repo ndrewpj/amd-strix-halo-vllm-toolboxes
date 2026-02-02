@@ -336,6 +336,26 @@
             margin-left: 12px;
         }
 
+        /* Info Box for Cluster */
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            color: #1e40af;
+            font-size: 0.95rem;
+        }
+
+        .info-box a {
+            color: #1d4ed8;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
         /* Footer */
         footer {
             margin-top: 60px;
@@ -432,12 +452,16 @@
             <div style="font-weight: 600; margin-bottom: 8px;">System Configuration</div>
             <div class="sys-config">
                 <div class="sys-item">
-                    <span class="sys-label">System</span>
-                    <span>Framework Desktop · AMD Ryzen AI MAX 395+ · 128GB unified RAM</span>
+                    <span class="sys-label">Node 1 & 2</span>
+                    <span>Framework Desktop Mainboard · AMD Ryzen AI MAX 395+ (Strix Halo) · 128GB Unified RAM</span>
                 </div>
                 <div class="sys-item">
                     <span class="sys-label">OS/Kernel</span>
-                    <span>Fedora 42 · Linux 6.18.0-0.rc6.243.vanilla.fc42.x86_64</span>
+                    <span>Fedora 43 (Rawhide) · Linux 6.18.5-200.fc43.x86_64</span>
+                </div>
+                <div class="sys-item">
+                    <span class="sys-label">Interconnect</span>
+                    <span>RDMA (RoCE v2) via Intel E810 (Direct Attach) · ~5µs Latency</span>
                 </div>
             </div>
         </footer>
@@ -633,6 +657,25 @@
             // Render Active Tab Content
             const test = activeTest;
 
+            // Cluster Info Box Logic
+            // If test name implies Tensor Parallelism > 1 (e.g. "Cluster", "TP=2", etc.)
+            // We default to checking if it's the "Throughput (Cluster)" tab or similar
+            if (test.name.toLowerCase().includes("tp=2") || test.name.toLowerCase().includes("cluster")) {
+                const infoBox = document.createElement('div');
+                infoBox.className = 'info-box';
+                infoBox.innerHTML = `
+                    <div style="font-size:1.2rem;">ℹ️</div>
+                    <div>
+                        <div style="font-weight:600; margin-bottom:4px;">Distributed Cluster (Tensor Parallelism = 2)</div>
+                        This benchmark runs on <b>2x Strix Halo nodes</b> connected via <b>Low-Latency RDMA (RoCE v2)</b>.
+                        The model is split across both APUs, effectively using 256GB of Unified Memory.
+                        <br><br>
+                        <a href="https://github.com/kyuz0/amd-strix-halo-vllm-toolboxes/blob/main/rdma_cluster/setup_guide.md" target="_blank">View Cluster Setup Guide &rarr;</a>
+                    </div>
+                `;
+                container.appendChild(infoBox);
+            }
+
             // Filter models within this test
             const models = test.models.filter(m => {
                 const s = state.search;
@@ -645,7 +688,7 @@
             });
 
             if (models.length === 0) {
-                container.innerHTML = '<div id="loading">No models match current filters in this category.</div>';
+                container.innerHTML += '<div id="loading">No models match current filters in this category.</div>';
                 return;
             }
 

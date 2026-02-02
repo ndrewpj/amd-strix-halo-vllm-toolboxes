@@ -180,7 +180,8 @@ def configure_and_launch_vllm(model_idx, head_ip):
     current_util = verified["util"]
     
     clear_cache = False
-    use_eager = True # Default True for cluster as per request ("enforce-eager")
+    # Default to eager mode for stability in cluster situations, especially at high concurrency
+    use_eager = True
     trust_remote = True # Default True as per request
     
     while True:
@@ -315,6 +316,8 @@ def configure_and_launch_vllm(model_idx, head_ip):
     print(f" Launching VLLM Cluster on Head: {head_ip}")
     print(f" Model:     {name}")
     print(f" Config:    TP={current_tp} | Seqs={current_seqs} | Ctx={current_ctx}")
+    if use_eager:
+        print(" Note:      Eager Mode Enabled (Recommended for Cluster Stability)")
     print(f" Command:   {' '.join(cmd)}")
     print("="*60 + "\n")
     

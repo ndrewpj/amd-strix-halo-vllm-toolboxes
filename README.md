@@ -5,6 +5,14 @@ An **Fedora 43** Docker/Podman container that is **Toolbx-compatible** (usable a
 
 ---
 
+## 🚀 High-Performance Clustering Support (New!)
+
+**Update:** This toolbox now ships with a **custom build of ROCm/RCCL** that enables **native RDMA/RoCE v2 support for Strix Halo (gfx1151)**. This allows you to connect two nodes via a low-latency interconnect (e.g., Intel E810) and run vLLM with Tensor Parallelism (TP=2) effectively acting as a single 256GB Unified Memory GPU.
+
+👉 **[Read the Full RDMA Cluster Setup Guide](rdma_cluster/setup_guide.md)** for hardware requirements and configuration instructions.
+
+---
+
 ## Table of Contents
 
 * [Tested Models (Benchmarks)](#tested-models-benchmarks)
@@ -14,6 +22,7 @@ An **Fedora 43** Docker/Podman container that is **Toolbx-compatible** (usable a
 * [4) Testing the API](#4-testing-the-api)
 * [5) Use a Web UI for Chatting](#5-use-a-web-ui-for-chatting)
 * [6) Host Configuration](#6-host-configuration)
+* [7) Distributed Clustering (RDMA/RoCE)](#7-distributed-clustering-rdmaroce)
 
 
 ## Tested Models (Benchmarks)
@@ -165,17 +174,17 @@ This should work on any Strix Halo. For a complete list of available hardware, s
 | **CPU**           | Ryzen AI MAX+ 395 "Strix Halo"                              |
 | **System Memory** | 128 GB RAM                                                  |
 | **GPU Memory**    | 512 MB allocated in BIOS                                    |
-| **Host OS**       | Fedora 42, Linux 6.18.0-0.rc6.vanilla.fc42.x86_64           |
+| **Host OS**       | Fedora 43 (Rawhide), Linux 6.18.5-200.fc43.x86_64            |
 
 ### 6.2 Kernel Parameters (tested on Fedora 42)
 
 Add these boot parameters to enable unified memory while reserving a minimum of 4 GiB for the OS (max 124 GiB for iGPU):
 
-amd_iommu=off amdgpu.gttsize=126976 ttm.pages_limit=32505856
+amd_iommu=pt amdgpu.gttsize=126976 ttm.pages_limit=32505856
 
 | Parameter                   | Purpose                                                                                    |
 |-----------------------------|--------------------------------------------------------------------------------------------|
-| `amd_iommu=off`             | Disables IOMMU for lower latency                                                           |
+| `amd_iommu=pt`              | Sets IOMMU to pass-through mode; reduces DMA overhead for better performance               |
 | `amdgpu.gttsize=126976`     | Caps GPU unified memory to 124 GiB; 126976 MiB ÷ 1024 = 124 GiB                            |
 | `ttm.pages_limit=32505856`  | Caps pinned memory to 124 GiB; 32505856 × 4 KiB = 126976 MiB = 124 GiB                     |
 
@@ -189,3 +198,14 @@ Source: https://www.reddit.com/r/LocalLLaMA/comments/1m9wcdc/comment/n5gf53d/?co
 sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 sudo reboot
 ```
+
+## 7) Distributed Clustering (RDMA/RoCE)
+
+This toolbox supports high-performance clustering of multiple Strix Halo nodes using Infiniband or RoCE v2 (e.g., Intel E810). This enables **Tensor Parallelism** across machines with extremely low latency (~5µs).
+
+**Detailed Documentation:** [RDMA Cluster Setup Guide](rdma_cluster/setup_guide.md)
+
+**Key Features:**
+*   **Custom RCCL Patch:** Use of a custom-built `librccl.so` to support RDMA on `gfx1151`.
+*   **Easy Setup:** `refresh_toolbox.sh` automatically detects and exposes RDMA devices.
+*   **Cluster Management:** Included `start-vllm-cluster` TUI for managing Ray and vLLM.
