@@ -146,6 +146,10 @@ def run_throughput(model, tp_size, backend_name="Default", output_dir=RESULTS_DI
     ])
     cmd.extend(dataset_args)
 
+    # Force Attention Backend via CLI if ROCm-Attn
+    if backend_name == "ROCm-Attn":
+        cmd.extend(["--attention-backend", "ROCM_ATTN"])
+
     # ENV Setup: Global + Model Specific
     env = os.environ.copy()
     
@@ -209,10 +213,11 @@ if __name__ == "__main__":
             # 1. Default (Triton)
             run_throughput(m, tp, "Default", RESULTS_DIR)
             
-            # 2. ROCm Attention
-            run_throughput(m, tp, "ROCm-Attn", "benchmark_results_rocm", {
-                "VLLM_V1_USE_PREFILL_DECODE_ATTENTION": "1",
-                "VLLM_USE_TRITON_FLASH_ATTN": "0"
-            })
+            # 2. ROCm Attention 
+            # We force this via CLI argument --attention-backend ROCM_ATTN below
+            # No specific env vars needed if forcing backend.
+            rocm_env = {}
+            print(f"[DEBUG] Forcing ROCm Env: {rocm_env} + CLI: --attention-backend ROCM_ATTN")
+            run_throughput(m, tp, "ROCm-Attn", "benchmark_results_rocm", rocm_env)
             
     print_summary(valid_tp_args)

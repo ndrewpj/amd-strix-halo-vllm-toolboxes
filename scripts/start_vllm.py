@@ -309,9 +309,7 @@ def configure_and_launch(model_idx, gpu_count):
     env.update(config.get("env", {}))
     
     if use_rocm_attn:
-        env["VLLM_V1_USE_PREFILL_DECODE_ATTENTION"] = "1"
-        env["VLLM_USE_TRITON_FLASH_ATTN"] = "0"
-        # Optional: Explicitly mention these in print
+        cmd.extend(["--attention-backend", "ROCM_ATTN"])
         
     
     print("\n" + "="*60)

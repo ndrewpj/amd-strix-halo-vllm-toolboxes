@@ -158,9 +158,7 @@ def get_model_args(model):
         
     if config.get("trust_remote"): cmd.append("--trust-remote-code")
     
-    # ALWAYS Enforce Eager Mode for Cluster Benchmarks (TP=2)
-    # Distributed Graph Capture is unstable/prone to hangs on Strix Halo Cluster
-    cmd.append("--enforce-eager")
+    if config.get("enforce_eager"): cmd.append("--enforce-eager")
     
     return cmd
 
@@ -193,6 +191,9 @@ def run_bench_set(model, backend_name, output_dir, extra_env=None):
         "--disable-log-stats"
     ])
     cmd.extend(dataset_args)
+
+    if backend_name == "ROCm-Attn":
+        cmd.extend(["--attention-backend", "ROCM_ATTN"])
 
     env = get_cluster_env()
     
@@ -227,10 +228,7 @@ def run_cluster_throughput(model):
         model,
         "ROCm-Attn",
         "benchmark_results_rocm",
-        extra_env={
-            "VLLM_V1_USE_PREFILL_DECODE_ATTENTION": "1",
-            "VLLM_USE_TRITON_FLASH_ATTN": "0"
-        }
+        extra_env={}
     )
 
 
