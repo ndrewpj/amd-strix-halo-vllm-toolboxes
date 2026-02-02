@@ -4,14 +4,14 @@ MODEL_TABLE = {
     "meta-llama/Meta-Llama-3.1-8B-Instruct": {
         "trust_remote": False,
         "valid_tp": [1, 2],
-        "max_num_seqs": "24", # Strix Halo Optimized (Bandwidth Limit)
+        "max_num_seqs": "64", # Strix Halo Optimized (Bus Batch Scale)
         "max_tokens": "32768" 
     },
     
     "google/gemma-3-12b-it": {
         "trust_remote": False,
         "valid_tp": [1, 2],
-        "max_num_seqs": "24",
+        "max_num_seqs": "64",
         "max_tokens": "32768" 
     },
     # 2. GPT-OSS 20B (MXFP4)
@@ -19,7 +19,7 @@ MODEL_TABLE = {
     "openai/gpt-oss-20b": {
         "trust_remote": True,
         "valid_tp": [1, 2],
-        "max_num_seqs": "24",
+        "max_num_seqs": "64",
         "max_tokens": "8192"
     },
     
@@ -34,7 +34,7 @@ MODEL_TABLE = {
     "Qwen/Qwen3-14B-AWQ": {
         "trust_remote": True,
         "valid_tp": [1], # Too big for single GPU
-        "max_num_seqs": "24", # Strix Halo Optimized
+        "max_num_seqs": "64", # Strix Halo Optimized
         "max_tokens": "16384", # Lower batch size because Eager mode is CPU intensive
         "enforce_eager": False, 
         "env": {"VLLM_USE_TRITON_AWQ": "1"} # Fixes "Unsupported Hardware" error
@@ -45,7 +45,7 @@ MODEL_TABLE = {
         "trust_remote": True,
         "enforce_eager": False, 
         "valid_tp": [1, 2],
-        "max_num_seqs": "24",
+        "max_num_seqs": "64",
         "max_tokens": "32768"
     },
 
@@ -53,7 +53,7 @@ MODEL_TABLE = {
         "trust_remote": True,
         "enforce_eager": False, 
         "valid_tp": [1, 2],
-        "max_num_seqs": "24",
+        "max_num_seqs": "64",
         "max_tokens": "32768"
     },
 
@@ -61,7 +61,7 @@ MODEL_TABLE = {
         "trust_remote": True,
         "enforce_eager": False, 
         "valid_tp": [1, 2],
-        "max_num_seqs": "24",
+        "max_num_seqs": "64",
         "max_tokens": "32768",
     },
 
@@ -71,7 +71,7 @@ MODEL_TABLE = {
      "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16": {
         "trust_remote": True,
         "valid_tp": [1], # Too big for single GPU
-        "max_num_seqs": "16", # Large Model / Bandwidth Constrained
+        "max_num_seqs": "64", # Large Model / Bandwidth Constrained
         "max_tokens": "16384", # Lower batch size because Eager mode is CPU intensive
         "enforce_eager": True, 
         "env": {"VLLM_USE_TRITON_AWQ": "1"} # Fixes "Unsupported Hardware" error
@@ -93,6 +93,6 @@ MODELS_TO_RUN = [
 
 # Hardware / Global Defaults
 GPU_UTIL = "0.90"
-OFF_NUM_PROMPTS = 100 # Reduced for Strix Halo (Bandwidth Limited)
+OFF_NUM_PROMPTS = 200 # Increased for Strix Halo (Steady State Saturation)
 OFF_FORCED_OUTPUT = "512"
 DEFAULT_BATCH_TOKENS = "8192"

@@ -556,12 +556,14 @@
                 usecase: "Demonstrates the raw horsepower and architectural efficiency.",
                 details: `
 **Test Configuration:**
-• <b>Dataset:</b> ShareGPT (Random Sample, 100 Prompts)
+• <b>Dataset:</b> ShareGPT (Random Sample, 200 Prompts)
 • <b>Output Length:</b> 512 Tokens (Fixed)
-• <b>Batch Budget:</b> 8192 - 32768 Tokens (Dynamic per model)
+• <b>Concurrency:</b> 64 Sequences (Saturates Memory Bandwidth)
 • <b>GPU Alloc:</b> 90% VRAM per GPU
 • <b>Pipeline:</b> <code>vllm bench throughput</code> (Offline)
 • <b>Cluster Config:</b> Ray Distributed (RoCE v2 RDMA, TP=2)
+
+<b>Rationale:</b> Throughput is maximized by increasing batch size (64) to utilize the massive memory bandwidth of Strix Halo, and running more prompts (200) to measure sustained steady-state performance.
 
 <b>Metric:</b> Tokens per Second (higher is better).`,
                 unit: " tok/s"
