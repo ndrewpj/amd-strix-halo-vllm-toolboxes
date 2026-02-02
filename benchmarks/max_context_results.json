@@ -6,7 +6,7 @@
     "max_seqs": 1,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 829952,
+    "real_capacity": 828144,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -18,7 +18,7 @@
     "max_seqs": 4,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 830064,
+    "real_capacity": 830128,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -30,7 +30,7 @@
     "max_seqs": 8,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 830080,
+    "real_capacity": 830144,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -42,7 +42,7 @@
     "max_seqs": 16,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 830064,
+    "real_capacity": 830128,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -54,7 +54,7 @@
     "max_seqs": 1,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 246032,
+    "real_capacity": 240512,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -66,7 +66,7 @@
     "max_seqs": 4,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 246064,
+    "real_capacity": 240544,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -78,7 +78,7 @@
     "max_seqs": 8,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 246064,
+    "real_capacity": 240544,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -90,7 +90,7 @@
     "max_seqs": 16,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 246064,
+    "real_capacity": 240544,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -101,19 +101,8 @@
     "util": "0.95",
     "max_seqs": 1,
     "model_limit": 40960,
-    "configured_len": 0,
-    "real_capacity": 0,
-    "status": "fail",
-    "error": "Verification Failed"
-  },
-  {
-    "model": "Qwen/Qwen3-14B-AWQ",
-    "tp": 1,
-    "util": "0.90",
-    "max_seqs": 1,
-    "model_limit": 40960,
     "configured_len": 40960,
-    "real_capacity": 655712,
+    "real_capacity": 695200,
     "status": "success",
     "error": "",
     "max_context_1_user": 40960
@@ -121,11 +110,11 @@
   {
     "model": "Qwen/Qwen3-14B-AWQ",
     "tp": 1,
-    "util": "0.90",
+    "util": "0.95",
     "max_seqs": 4,
     "model_limit": 40960,
     "configured_len": 40960,
-    "real_capacity": 655616,
+    "real_capacity": 696240,
     "status": "success",
     "error": "",
     "max_context_1_user": 40960
@@ -133,11 +122,11 @@
   {
     "model": "Qwen/Qwen3-14B-AWQ",
     "tp": 1,
-    "util": "0.90",
+    "util": "0.95",
     "max_seqs": 8,
     "model_limit": 40960,
     "configured_len": 40960,
-    "real_capacity": 655600,
+    "real_capacity": 696240,
     "status": "success",
     "error": "",
     "max_context_1_user": 40960
@@ -145,11 +134,11 @@
   {
     "model": "Qwen/Qwen3-14B-AWQ",
     "tp": 1,
-    "util": "0.90",
+    "util": "0.95",
     "max_seqs": 16,
     "model_limit": 40960,
     "configured_len": 40960,
-    "real_capacity": 655600,
+    "real_capacity": 696240,
     "status": "success",
     "error": "",
     "max_context_1_user": 40960
@@ -161,7 +150,7 @@
     "max_seqs": 1,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 2232848,
+    "real_capacity": 2222384,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -173,7 +162,7 @@
     "max_seqs": 4,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 2232560,
+    "real_capacity": 2232672,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -185,7 +174,7 @@
     "max_seqs": 8,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 2232544,
+    "real_capacity": 2232672,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -197,7 +186,7 @@
     "max_seqs": 16,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 2232544,
+    "real_capacity": 2232656,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -209,7 +198,7 @@
     "max_seqs": 1,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 711360,
+    "real_capacity": 711296,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -221,7 +210,7 @@
     "max_seqs": 4,
     "model_limit": 131072,
     "configured_len": 131072,
-    "real_capacity": 711168,
+    "real_capacity": 711184,
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
@@ -249,86 +238,6 @@
     "status": "success",
     "error": "",
     "max_context_1_user": 131072
-  },
-  {
-    "model": "cpatonn/Qwen3-Coder-30B-A3B-Instruct-GPTQ-4bit",
-    "tp": 1,
-    "util": "0.95",
-    "max_seqs": 1,
-    "model_limit": 262144,
-    "configured_len": 262144,
-    "real_capacity": 1097712,
-    "status": "success",
-    "error": "",
-    "max_context_1_user": 262144
-  },
-  {
-    "model": "cpatonn/Qwen3-Coder-30B-A3B-Instruct-GPTQ-4bit",
-    "tp": 1,
-    "util": "0.95",
-    "max_seqs": 4,
-    "model_limit": 262144,
-    "configured_len": 0,
-    "real_capacity": 0,
-    "status": "fail",
-    "error": "Verification Failed"
-  },
-  {
-    "model": "cpatonn/Qwen3-Coder-30B-A3B-Instruct-GPTQ-4bit",
-    "tp": 1,
-    "util": "0.90",
-    "max_seqs": 4,
-    "model_limit": 262144,
-    "configured_len": 209715,
-    "real_capacity": 1029856,
-    "status": "success",
-    "error": "Process died or timed out",
-    "max_context_1_user": 209715
-  },
-  {
-    "model": "cpatonn/Qwen3-Coder-30B-A3B-Instruct-GPTQ-4bit",
-    "tp": 1,
-    "util": "0.90",
-    "max_seqs": 8,
-    "model_limit": 262144,
-    "configured_len": 0,
-    "real_capacity": 0,
-    "status": "fail",
-    "error": "Verification Failed"
-  },
-  {
-    "model": "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16",
-    "tp": 1,
-    "util": "0.95",
-    "max_seqs": 1,
-    "model_limit": 262144,
-    "configured_len": 0,
-    "real_capacity": 0,
-    "status": "fail",
-    "error": "Verification Failed"
-  },
-  {
-    "model": "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16",
-    "tp": 1,
-    "util": "0.90",
-    "max_seqs": 1,
-    "model_limit": 262144,
-    "configured_len": 262144,
-    "real_capacity": 696320,
-    "status": "success",
-    "error": "",
-    "max_context_1_user": 262144
-  },
-  {
-    "model": "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16",
-    "tp": 1,
-    "util": "0.90",
-    "max_seqs": 4,
-    "model_limit": 262144,
-    "configured_len": 0,
-    "real_capacity": 0,
-    "status": "fail",
-    "error": "Verification Failed"
   },
   {
     "model": "zai-org/GLM-4.7-Flash",
@@ -336,11 +245,11 @@
     "util": "0.95",
     "max_seqs": 1,
     "model_limit": 202752,
-    "configured_len": 162201,
+    "configured_len": 202752,
     "real_capacity": 791088,
     "status": "success",
-    "error": "Timeout",
-    "max_context_1_user": 162201
+    "error": "",
+    "max_context_1_user": 202752
   },
   {
     "model": "zai-org/GLM-4.7-Flash",
@@ -348,23 +257,23 @@
     "util": "0.95",
     "max_seqs": 4,
     "model_limit": 202752,
-    "configured_len": 162201,
-    "real_capacity": 791056,
-    "status": "success",
-    "error": "",
-    "max_context_1_user": 162201
-  },
-  {
-    "model": "zai-org/GLM-4.7-Flash",
-    "tp": 1,
-    "util": "0.95",
-    "max_seqs": 8,
-    "model_limit": 202752,
-    "configured_len": 162201,
+    "configured_len": 202752,
     "real_capacity": 791008,
     "status": "success",
     "error": "",
-    "max_context_1_user": 162201
+    "max_context_1_user": 202752
+  },
+  {
+    "model": "zai-org/GLM-4.7-Flash",
+    "tp": 1,
+    "util": "0.95",
+    "max_seqs": 8,
+    "model_limit": 202752,
+    "configured_len": 202752,
+    "real_capacity": 791008,
+    "status": "success",
+    "error": "",
+    "max_context_1_user": 202752
   },
   {
     "model": "zai-org/GLM-4.7-Flash",
@@ -372,11 +281,11 @@
     "util": "0.95",
     "max_seqs": 16,
     "model_limit": 202752,
-    "configured_len": 162201,
+    "configured_len": 202752,
     "real_capacity": 790992,
     "status": "success",
     "error": "",
-    "max_context_1_user": 162201
+    "max_context_1_user": 202752
   },
   {
     "model": "btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-4bit",
@@ -385,7 +294,7 @@
     "max_seqs": 1,
     "model_limit": 262144,
     "configured_len": 262144,
-    "real_capacity": 1089152,
+    "real_capacity": 1088288,
     "status": "success",
     "error": "",
     "max_context_1_user": 262144
@@ -432,11 +341,11 @@
     "util": "0.95",
     "max_seqs": 1,
     "model_limit": 262144,
-    "configured_len": 209715,
+    "configured_len": 262144,
     "real_capacity": 936544,
     "status": "success",
-    "error": "Timeout",
-    "max_context_1_user": 209715
+    "error": "",
+    "max_context_1_user": 262144
   },
   {
     "model": "btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-8bit",
@@ -444,11 +353,11 @@
     "util": "0.95",
     "max_seqs": 4,
     "model_limit": 262144,
-    "configured_len": 209715,
+    "configured_len": 262144,
     "real_capacity": 937312,
     "status": "success",
     "error": "",
-    "max_context_1_user": 209715
+    "max_context_1_user": 262144
   },
   {
     "model": "btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-8bit",
@@ -456,11 +365,11 @@
     "util": "0.95",
     "max_seqs": 8,
     "model_limit": 262144,
-    "configured_len": 209715,
+    "configured_len": 262144,
     "real_capacity": 937296,
     "status": "success",
     "error": "",
-    "max_context_1_user": 209715
+    "max_context_1_user": 262144
   },
   {
     "model": "btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-8bit",
@@ -468,10 +377,58 @@
     "util": "0.95",
     "max_seqs": 16,
     "model_limit": 262144,
-    "configured_len": 209715,
+    "configured_len": 262144,
     "real_capacity": 937280,
     "status": "success",
     "error": "",
-    "max_context_1_user": 209715
+    "max_context_1_user": 262144
+  },
+  {
+    "model": "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16",
+    "tp": 1,
+    "util": "0.95",
+    "max_seqs": 1,
+    "model_limit": 262144,
+    "configured_len": 262144,
+    "real_capacity": 763776,
+    "status": "success",
+    "error": "",
+    "max_context_1_user": 262144
+  },
+  {
+    "model": "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16",
+    "tp": 1,
+    "util": "0.95",
+    "max_seqs": 4,
+    "model_limit": 262144,
+    "configured_len": 262144,
+    "real_capacity": 763776,
+    "status": "success",
+    "error": "",
+    "max_context_1_user": 262144
+  },
+  {
+    "model": "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16",
+    "tp": 1,
+    "util": "0.95",
+    "max_seqs": 8,
+    "model_limit": 262144,
+    "configured_len": 262144,
+    "real_capacity": 763776,
+    "status": "success",
+    "error": "",
+    "max_context_1_user": 262144
+  },
+  {
+    "model": "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16",
+    "tp": 1,
+    "util": "0.95",
+    "max_seqs": 16,
+    "model_limit": 262144,
+    "configured_len": 262144,
+    "real_capacity": 763776,
+    "status": "success",
+    "error": "",
+    "max_context_1_user": 262144
   }
 ]
