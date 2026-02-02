@@ -36,10 +36,12 @@ View full benchmarks at: [https://kyuz0.github.io/amd-strix-halo-vllm-toolboxes/
 | **`meta-llama/Meta-Llama-3.1-8B-Instruct`** | 1 | 128k (0.95) | 128k (0.95) | 128k (0.95) | 128k (0.95) |
 | **`google/gemma-3-12b-it`** | 1 | 128k (0.95) | 128k (0.95) | 128k (0.95) | 128k (0.95) |
 | **`openai/gpt-oss-20b`** | 1 | 128k (0.95) | 128k (0.95) | 128k (0.95) | 128k (0.95) |
-| **`Qwen/Qwen3-14B-AWQ`** | 1 | 40k (0.90) | 40k (0.90) | 40k (0.90) | 40k (0.90) |
-| **`cpatonn/Qwen3-Coder-30B-A3B-Instruct-GPTQ-4bit`** | 1 | 256k (0.95) | 204k (0.90) | - | - |
-| **`dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16`** | 1 | 256k (0.90) | - | - | - |
+| **`Qwen/Qwen3-14B-AWQ`** | 1 | 40k (0.95) | 40k (0.95) | 40k (0.95) | 40k (0.95) |
+| **`btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-4bit`** | 1 | 256k (0.95) | 256k (0.95) | 256k (0.95) | 256k (0.95) |
+| **`btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-8bit`** | 1 | 256k (0.95) | 256k (0.95) | 256k (0.95) | 256k (0.95) |
+| **`dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16`** | 1 | 256k (0.95) | 256k (0.95) | 256k (0.95) | 256k (0.95) |
 | **`openai/gpt-oss-120b`** | 1 | 128k (0.95) | 128k (0.95) | 128k (0.95) | 128k (0.95) |
+| **`zai-org/GLM-4.7-Flash`** | 1 | 198k (0.95) | 198k (0.95) | 198k (0.95) | 198k (0.95) |
 
 
 ---
@@ -184,7 +186,7 @@ amd_iommu=pt amdgpu.gttsize=126976 ttm.pages_limit=32505856
 
 | Parameter                   | Purpose                                                                                    |
 |-----------------------------|--------------------------------------------------------------------------------------------|
-| `amd_iommu=pt`              | Sets IOMMU to pass-through mode; reduces DMA overhead for better performance               |
+| `amd_iommu=off`              | Disables AMD IOMMU to reduce overhead for better performance               |
 | `amdgpu.gttsize=126976`     | Caps GPU unified memory to 124 GiB; 126976 MiB ÷ 1024 = 124 GiB                            |
 | `ttm.pages_limit=32505856`  | Caps pinned memory to 124 GiB; 32505856 × 4 KiB = 126976 MiB = 124 GiB                     |
 
