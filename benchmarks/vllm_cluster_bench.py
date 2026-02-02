@@ -2,30 +2,7 @@
 import subprocess, time, json, sys, os, requests, argparse, re
 from pathlib import Path
 
-# =========================
-# ⚙️ GLOBAL SETTINGS
-# =========================
-
-# CLUSTER CONFIG: 2x Strix Halo (TP=2)
-# User requested specifically to test with TP=2 on the cluster.
-CLUSTER_TP = 2
-GPU_UTIL = "0.90" 
-
-# THROUGHPUT CONFIG (Same as run_vllm_bench)
-OFF_NUM_PROMPTS      = 200 
-OFF_FORCED_OUTPUT    = "512"
-DEFAULT_BATCH_TOKENS = "8192"
-
-RESULTS_DIR = Path("benchmark_results")
-RESULTS_DIR.mkdir(exist_ok=True)
-
-# Reuse the model table from the main benchmark script
-# We can just import it or copy it. Importing is cleaner but might rely on path.
-# For standalone robustness, I will copy the minimal needed config or import if possible.
-# Since this is a new file in root/benchmarks? No, likely scripts/ or same dir.
-# Let's assume it's in the same dir as run_vllm_bench.py.
-
-
+# Import models immediately to access globals
 try:
     import models
 except ImportError:
@@ -37,9 +14,34 @@ except ImportError:
     except ImportError:
         sys.path.append(str(Path(__file__).parent.parent / "scripts"))
         import models
-        
+
+# =========================
+# ⚙️ GLOBAL SETTINGS
+# =========================
+
+# CLUSTER CONFIG: 2x Strix Halo (TP=2)
+# User requested specifically to test with TP=2 on the cluster.
+CLUSTER_TP = 2
+GPU_UTIL = "0.90" 
+
+# THROUGHPUT CONFIG (Imported from models.py)
+OFF_NUM_PROMPTS      = models.OFF_NUM_PROMPTS
+OFF_FORCED_OUTPUT    = models.OFF_FORCED_OUTPUT
+DEFAULT_BATCH_TOKENS = models.DEFAULT_BATCH_TOKENS
+
+RESULTS_DIR = Path("benchmark_results")
+RESULTS_DIR.mkdir(exist_ok=True)
+
+# Reuse the model table from the main benchmark script
+# We can just import it or copy it. Importing is cleaner but might rely on path.
+# For standalone robustness, I will copy the minimal needed config or import if possible.
+# Since this is a new file in root/benchmarks? No, likely scripts/ or same dir.
+# Let's assume it's in the same dir as run_vllm_bench.py.
+
+
 MODEL_TABLE = models.MODEL_TABLE
 MODELS_TO_RUN = models.MODELS_TO_RUN
+
 
 # =========================
 # UTILS (Adapted for Cluster)

@@ -15,12 +15,24 @@ except ImportError:
     print("Error: 'transformers' not found. Please install it or run in vLLM environment.")
     sys.exit(1)
 
-# Import configuration from average benchmark script
+# Import path handling for scripts/models.py
 try:
-    from run_vllm_bench import MODEL_TABLE, MODELS_TO_RUN, get_gpu_count, kill_vllm
+    import sys, os
+    sys.path.append(str(Path(__file__).parent.parent / "scripts"))
+    import models
 except ImportError:
-    print("Error: Could not import run_vllm_bench.py. Make sure it is in the same directory.")
+    print("Error: Could not import scripts/models.py.")
     sys.exit(1)
+
+# Import Utils from run_vllm_bench (keep utils shared)
+try:
+    from run_vllm_bench import get_gpu_count, kill_vllm
+except ImportError:
+    print("Error: Could not import run_vllm_bench.py.")
+    sys.exit(1)
+
+MODEL_TABLE = models.MODEL_TABLE
+MODELS_TO_RUN = models.MODELS_TO_RUN
 
 # =========================
 # 🧠 GROUNDING & METHODOLOGY
@@ -46,7 +58,7 @@ REPORT_FILE = Path("max_context_report.md")
 
 # We test these GPU Utilizations steps to see how much we can squeeze
 # 0.90 is default, but we want MAX context.
-# 0.98 is our target high. 0.95 is the fallback.
+# 0.58 is our target high. 0.90 is the fallback.
 GPU_UTIL_STEPS = ["0.95", "0.90"]
 # We test these concurrency settings
 CONCURRENCY_STEPS = [1, 4, 8, 16]
