@@ -202,6 +202,26 @@
             color: var(--primary);
         }
 
+        /* Diff Styling */
+        .val-pos {
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .val-neg {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .val-neu {
+            color: #9ca3af;
+        }
+
+        .col-diff {
+            background: #f9fafb;
+            font-size: 0.9rem;
+        }
+
         /* Modal/Overlay */
         #loading {
             text-align: center;
@@ -433,11 +453,40 @@
         </header>
 
         <div class="controls">
-            <input type="text" id="searchInput" class="search" placeholder="Search models (e.g. 'llama', 'fp8')..."
-                autocomplete="off">
-            <select id="quantFilter">
-                <option value="">All Quantizations</option>
+            <input type="text" id="searchInput" class="search" placeholder="Search models..." autocomplete="off">
+            <select id="quantFilter" style="max-width: 150px;">
+                <option value="">All Quants</option>
             </select>
+
+            <!-- Toggles -->
+            <div
+                style="display: flex; gap: 12px; align-items: center; border-left: 1px solid #e5e7eb; padding-left: 12px;">
+                <label
+                    style="font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                    <input type="checkbox" id="toggleTP1" checked> TP1
+                </label>
+                <label
+                    style="font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                    <input type="checkbox" id="toggleTP2" checked> TP2
+                </label>
+            </div>
+
+            <!-- Attention Group -->
+            <div
+                style="display: flex; align-items: center; gap: 8px; border-left: 1px solid #e5e7eb; padding-left: 12px;">
+                <span
+                    style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: #9ca3af; letter-spacing: 0.05em;">Attention</span>
+                <div style="display: flex; gap: 12px;">
+                    <label
+                        style="font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                        <input type="checkbox" id="toggleTriton" checked> Triton
+                    </label>
+                    <label
+                        style="font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                        <input type="checkbox" id="toggleRocm"> ROCm
+                    </label>
+                </div>
+            </div>
         </div>
 
         <nav id="tabNav" class="tab-nav">
@@ -469,6 +518,7 @@
 
     <!-- Modal Overlay -->
     <div id="modalOverlay" class="modal-overlay">
+        <!-- ... modal content ... -->
         <div class="modal">
             <div class="modal-header">
                 <h3 id="modalTitle">Benchmark Info</h3>
@@ -480,44 +530,57 @@
         </div>
     </div>
 
+    <!-- Script Logic Updates Below -->
     <script>
+        // Helper - Defined at top to avoid ReferenceError
+        const $ = id => document.getElementById(id);
+
         // State
         let rawRuns = [];
         let tests = [];
         let state = {
             search: "",
             quant: "",
-            activeTab: "Throughput"
+            activeTab: "Throughput",
+            showTP1: true,
+            showTP2: true,
+            showTriton: true,
+            showRocm: false
         };
 
-        // Benchmark Metadata
+        // Metadata
         const BENCHMARK_INFO = {
             "Throughput": {
                 short: "Maximum raw compute capacity (Tokens/Sec).",
                 desc: "Measures the absolute maximum number of tokens the system can generate per second by fully saturating the GPU compute capability.",
-                usecase: "Demonstrates the raw horsepower and architectural efficiency of the hardware/model combo under Heavy Load. This is the theoretical speed limit of the system.",
-                details: "Command: `vllm bench throughput`\nParams: --num-prompts 100 --output-len 512\nMetric: Tokens per Second (higher is better).",
+                usecase: "Demonstrates the raw horsepower and architectural efficiency.",
+                details: `
+**Test Configuration:**
+• <b>Dataset:</b> ShareGPT (Random Sample, 100 Prompts)
+• <b>Output Length:</b> 512 Tokens (Fixed)
+• <b>Batch Budget:</b> 8192 - 32768 Tokens (Dynamic per model)
+• <b>GPU Alloc:</b> 90% VRAM per GPU
+• <b>Pipeline:</b> <code>vllm bench throughput</code> (Offline)
+• <b>Cluster Config:</b> Ray Distributed (RoCE v2 RDMA, TP=2)
+
+<b>Metric:</b> Tokens per Second (higher is better).`,
                 unit: " tok/s"
             },
             "TTFT": {
                 short: "Time To First Token (Response Latency).",
-                desc: "The 'Time To First Token' is the delay between sending a request and seeing the first character of the response.",
-                usecase: "<b>Responsiveness</b>. Low TTFT makes the AI feel 'snappy' and instant. High TTFT feels like the AI is ignoring you or lagging. We measure at different QPS loads to ensure the server doesn't 'choke' when busy.",
-                context: "<b>QPS = Queries Per Second (Traffic Load)</b>.<br>• QPS 1.0 = 1 user sending a request every second.<br>• QPS 4.0 = 4 users sending requests every second (Simulates High Load).",
-                details: "Command: `vllm bench serve`\nParams: --random-input-len 1024 --random-output-len 512\nMetric: Milliseconds (lower is better).",
+                desc: "Delay between sending a request and seeing the first character.",
+                usecase: "Responsiveness. Low TTFT makes the AI feel 'snappy'.",
+                details: "Command: `vllm bench serve`\nMetric: Milliseconds (lower is better).",
                 unit: " ms"
             },
             "TPOT": {
                 short: "Time Per Output Token (Streaming Speed).",
-                desc: "The 'Time Per Output Token' measures how fast the text generates *after* the first token appears.",
-                usecase: "<b>1. Fluidity</b>: Industry standard is <50ms (>20 tok/s) for a 'fluid' feeling. Slower feels laggy.<br><b>2. Bottlenecks</b>: We test at <b>QPS 4.0</b> to find memory bandwidth bottlenecks where the GPU can't keep up with multiple users.",
-                context: "<b>QPS = Queries Per Second (Traffic Load)</b>.<br>• QPS 1.0 = Light Load (Ideal conditions)<br>• QPS 4.0 = Heavy Load (Stress Test)",
-                details: "Command: `vllm bench serve`\nParams: --random-input-len 1024 --random-output-len 512\nMetric: Milliseconds (lower is better).",
+                desc: "Measures how fast the text generates *after* the first token.",
+                usecase: "Fluidity. Industry standard is <50ms (>20 tok/s).",
+                details: "Command: `vllm bench serve`\nMetric: Milliseconds (lower is better).",
                 unit: " ms"
             }
         };
-
-        const $ = id => document.getElementById(id);
 
         async function init() {
             try {
@@ -525,71 +588,16 @@
                 const data = await res.json();
                 rawRuns = data.runs || [];
                 processData();
+                setupControls();
                 render();
-                populateFilters();
             } catch (e) {
                 $('loading').textContent = "Error loading results.json: " + e.message;
                 console.error(e);
             }
         }
 
-        function processData() {
-            const testGroups = {};
-
-            rawRuns.forEach(run => {
-                if (!run.test) return;
-                if (!testGroups[run.test]) {
-                    testGroups[run.test] = {
-                        name: run.test,
-                        models: {}
-                    };
-                }
-
-                // Normalize model name
-                const modelName = run.model_clean || run.model;
-
-                if (!testGroups[run.test].models[modelName]) {
-                    testGroups[run.test].models[modelName] = {
-                        name: modelName,
-                        quant: run.quant,
-                        params: run.params_b || run.name_params_b,
-                        triton: null,
-                        rocm: null
-                    };
-                }
-
-                const m = testGroups[run.test].models[modelName];
-
-                // Assign Backend value
-                if (run.backend === "Triton") m.triton = run.tps_mean;
-                if (run.backend === "ROCm") m.rocm = run.tps_mean;
-            });
-
-            // Convert map to array for sorting
-            tests = Object.values(testGroups).map(group => {
-                return {
-                    name: group.name,
-                    models: Object.values(group.models)
-                };
-            });
-
-            // Sort tests: Throughput first, then others alphabetically
-            tests.sort((a, b) => {
-                const aTp = a.name.startsWith("Throughput");
-                const bTp = b.name.startsWith("Throughput");
-
-                if (aTp && !bTp) return -1;
-                if (!aTp && bTp) return 1;
-                return a.name.localeCompare(b.name);
-            });
-
-            // Set default tab if not set
-            if (!state.activeTab && tests.length > 0) {
-                state.activeTab = tests[0].name;
-            }
-        }
-
-        function populateFilters() {
+        function setupControls() {
+            // Filters
             const quants = new Set(rawRuns.map(r => r.quant).filter(Boolean));
             const sel = $('quantFilter');
             [...quants].sort().forEach(q => {
@@ -599,22 +607,74 @@
                 sel.appendChild(opt);
             });
 
-            $('searchInput').addEventListener('input', e => {
-                state.search = e.target.value.toLowerCase();
-                render();
-            });
+            $('searchInput').addEventListener('input', e => { state.search = e.target.value.toLowerCase(); render(); });
+            sel.addEventListener('change', e => { state.quant = e.target.value; render(); });
 
-            sel.addEventListener('change', e => {
-                state.quant = e.target.value;
-                render();
-            });
+            // Toggles
+            $('toggleTP1').addEventListener('change', e => { state.showTP1 = e.target.checked; render(); });
+            $('toggleTP2').addEventListener('change', e => { state.showTP2 = e.target.checked; render(); });
+            $('toggleTriton').addEventListener('change', e => { state.showTriton = e.target.checked; render(); });
+            $('toggleRocm').addEventListener('change', e => { state.showRocm = e.target.checked; render(); });
         }
 
-        function getBenchmarkMeta(testName) {
-            if (testName.includes("Throughput")) return BENCHMARK_INFO["Throughput"];
-            if (testName.includes("TTFT")) return BENCHMARK_INFO["TTFT"];
-            if (testName.includes("TPOT")) return BENCHMARK_INFO["TPOT"];
-            return null;
+        function processData() {
+            const testGroups = {};
+
+            rawRuns.forEach(run => {
+                let testName = run.test;
+                if (!testGroups[testName]) {
+                    testGroups[testName] = { name: testName, models: {} };
+                }
+
+                const modelName = run.model_clean || run.model;
+                if (!testGroups[testName].models[modelName]) {
+                    testGroups[testName].models[modelName] = {
+                        name: modelName,
+                        quant: run.quant,
+                        params: run.params_b || run.name_params_b,
+                        results: {
+                            1: { triton: null, rocm: null },
+                            2: { triton: null, rocm: null }
+                        }
+                    };
+                }
+
+                const m = testGroups[testName].models[modelName];
+                const tp = run.tp || 1;
+
+                if (!m.results[tp]) m.results[tp] = { triton: null, rocm: null };
+
+                if (run.backend === "Triton") m.results[tp].triton = run.tps_mean;
+                if (run.backend === "ROCm") m.results[tp].rocm = run.tps_mean;
+            });
+
+            tests = Object.values(testGroups).map(g => ({
+                name: g.name,
+                models: Object.values(g.models)
+            }));
+
+            tests.sort((a, b) => {
+                const aTp = a.name.includes("Throughput");
+                const bTp = b.name.includes("Throughput");
+                if (aTp && !bTp) return -1;
+                if (!aTp && bTp) return 1;
+                return a.name.localeCompare(b.name);
+            });
+
+            if (tests.length > 0) state.activeTab = tests[0].name;
+        }
+
+        function formatVal(v, unit) {
+            if (v === null || v === undefined) return '<span class="val-na">-</span>';
+            if (v === 0) return '<span class="val-na" style="color:#ef4444;font-weight:bold;">X</span>';
+            return `<span class="val">${v.toFixed(2)}<span style="font-size:0.75em; color:#9ca3af; margin-left:2px;">${unit}</span></span>`;
+        }
+
+        function getMeta(name) {
+            if (name.includes("Throughput")) return BENCHMARK_INFO["Throughput"];
+            if (name.includes("TTFT")) return BENCHMARK_INFO["TTFT"];
+            if (name.includes("TPOT")) return BENCHMARK_INFO["TPOT"];
+            return { short: "", desc: "", unit: "" };
         }
 
         function render() {
@@ -627,208 +687,165 @@
                 const btn = document.createElement('button');
                 btn.className = `tab-btn ${test.name === state.activeTab ? 'active' : ''}`;
                 btn.textContent = test.name;
-                btn.onclick = () => {
-                    state.activeTab = test.name;
-                    render();
-                };
+                btn.onclick = () => { state.activeTab = test.name; render(); };
                 tabNav.appendChild(btn);
             });
 
-            // Ensure active tab exists (if search filtered it out logic?) 
-            // Actually tabs are based on 'tests' which is processed from raw data, so they exist regardless of filters unless we want to hide tabs with no results.
-            // For now, let's keep tabs static based on available data types.
-
             container.innerHTML = "";
-
-            // Find active test
             const activeTest = tests.find(t => t.name === state.activeTab);
-
             if (!activeTest) {
-                // If invalid tab (e.g. on first load if default doesn't exist), switch to first
-                if (tests.length > 0) {
-                    state.activeTab = tests[0].name;
-                    // Re-render immediately
-                    setTimeout(render, 0);
-                }
-                container.innerHTML = '<div id="loading">No data available.</div>';
+                container.innerHTML = '<div id="loading">No Data</div>';
                 return;
             }
 
-            // Render Active Tab Content
-            const test = activeTest;
-
-            // Cluster Info Box Logic
-            // If test name implies Tensor Parallelism > 1 (e.g. "Cluster", "TP=2", etc.)
-            // We default to checking if it's the "Throughput (Cluster)" tab or similar
-            if (test.name.toLowerCase().includes("tp=2") || test.name.toLowerCase().includes("cluster")) {
+            // Simplified Info Box logic
+            if (state.showTP2) {
                 const infoBox = document.createElement('div');
-                infoBox.className = 'info-box';
+                infoBox.style.cssText = "background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px 16px; margin-bottom:20px; font-size:0.9rem; color:#64748b; display:flex; justify-content:space-between; align-items:center;";
                 infoBox.innerHTML = `
-                    <div style="font-size:1.2rem;">ℹ️</div>
-                    <div>
-                        <div style="font-weight:600; margin-bottom:4px;">Distributed Cluster (Tensor Parallelism = 2)</div>
-                        This benchmark runs on <b>2x Strix Halo nodes</b> connected via <b>Low-Latency RDMA (RoCE v2)</b>.
-                        The model is split across both APUs, effectively using 256GB of Unified Memory.
-                        <br><br>
-                        <a href="https://github.com/kyuz0/amd-strix-halo-vllm-toolboxes/blob/main/rdma_cluster/setup_guide.md" target="_blank">View Cluster Setup Guide &rarr;</a>
-                    </div>
+                    <span><b>TP2</b> = Distributed Cluster (2x Strix Halo, RDMA RoCE v2).</span>
+                    <a href="https://github.com/kyuz0/amd-strix-halo-vllm-toolboxes/blob/main/rdma_cluster/setup_guide.md" target="_blank" style="color:#3b82f6; text-decoration:none; font-weight:500;">Cluster Setup Guide &rarr;</a>
                 `;
                 container.appendChild(infoBox);
             }
 
-            // Filter models within this test
-            const models = test.models.filter(m => {
-                const s = state.search;
-                const matchSearch = !s || m.name.toLowerCase().includes(s);
+            // Models Filter & Sort
+            const models = activeTest.models.filter(m => {
+                const matchS = !state.search || m.name.toLowerCase().includes(state.search);
+                const matchQ = !state.quant || m.quant === state.quant;
+                return matchS && matchQ;
+            }).sort((a, b) => (parseFloat(a.params) || 0) - (parseFloat(b.params) || 0) || a.name.localeCompare(b.name));
 
-                const q = state.quant;
-                const matchQuant = !q || m.quant === q;
-
-                return matchSearch && matchQuant;
-            });
-
-            if (models.length === 0) {
-                container.innerHTML += '<div id="loading">No models match current filters in this category.</div>';
-                return;
-            }
-
-            // Sorting models by size (small to large), then name
-            models.sort((a, b) => {
-                const pA = parseFloat(a.params) || 0;
-                const pB = parseFloat(b.params) || 0;
-                if (pA !== pB) return pA - pB;
-                return a.name.localeCompare(b.name);
-            });
-
+            // Create Table
             const card = document.createElement('div');
             card.className = "section-card";
 
-            // Metadata resolution
-            const meta = getBenchmarkMeta(test.name);
-            const shortDesc = meta ? `<span class="section-desc">${meta.short}</span>` : "";
-            const helpBtn = meta ? `<button class="btn-help" onclick="openModal('${test.name}')">?</button>` : "";
+            const meta = getMeta(activeTest.name);
+            const unit = meta.unit || "";
 
+            // Header
             const header = document.createElement('div');
             header.className = "section-header";
             header.innerHTML = `
-            <div class="section-title-row">
-                <h2>${test.name}</h2>
-                ${helpBtn}
-            </div>
-            ${shortDesc}
-        `;
+                <div class="section-title-row">
+                    <h2>${activeTest.name}</h2>
+                    <button class="btn-help" onclick="openModal('${activeTest.name}')">?</button>
+                </div>
+                <span class="section-desc">${meta.short}</span>
+            `;
             card.appendChild(header);
 
+            // Table
             const tableResp = document.createElement('div');
             tableResp.className = "table-responsive";
-
             const table = document.createElement('table');
-            const thead = document.createElement('thead');
-            thead.innerHTML = `
-            <tr>
-                <th class="col-model">Model</th>
-                <th class="col-data">Triton Attention</th>
-                <th class="col-data">ROCm Attention</th>
-            </tr>
-        `;
-            table.appendChild(thead);
 
+            // Build Dynamic Columns
+            let cols = [];
+            if (state.showTP1) {
+                if (state.showTriton) cols.push({ id: "tp1_triton", label: "TP1 Triton" });
+                if (state.showRocm) cols.push({ id: "tp1_rocm", label: "TP1 ROCm" });
+            }
+            if (state.showTP2) {
+                if (state.showTriton) cols.push({ id: "tp2_triton", label: "TP2 Triton" });
+                if (state.showRocm) cols.push({ id: "tp2_rocm", label: "TP2 ROCm" });
+            }
+
+            // Thead
+            let theadHtml = `<thead><tr><th class="col-model">Model</th>`;
+            cols.forEach(c => {
+                // Style differentiation for TP2
+                const style = c.id.startsWith("tp2") ? "background:#eff6ff; color:#1e40af;" : "";
+                theadHtml += `<th class="col-data" style="${style}">${c.label}</th>`;
+            });
+
+            // Diff Column Header
+            if (cols.length === 2) {
+                theadHtml += `<th class="col-data col-diff">Diff</th>`;
+            }
+
+            theadHtml += `</tr></thead>`;
+            table.innerHTML = theadHtml;
+
+            // Tbody
             const tbody = document.createElement('tbody');
             models.forEach(m => {
                 const tr = document.createElement('tr');
 
-                // Meta tags
+                // Model Name Cell
                 let metaHtml = "";
                 if (m.quant) metaHtml += `<span class="tag">${m.quant}</span>`;
                 if (m.params) metaHtml += `<span class="tag">${m.params}B</span>`;
 
-                // Values
-                // Pass unit from meta
-                const unit = meta ? meta.unit : "";
-                const val1 = formatVal(m.triton, unit);
+                let rowHtml = `
+                    <td>
+                        <div class="model-cell">
+                            <a href="https://huggingface.co/${m.name}" target="_blank" class="model-name" style="text-decoration:none;color:inherit;">${m.name}</a>
+                            <div class="model-meta">${metaHtml}</div>
+                        </div>
+                    </td>
+                `;
 
-                // Special handling for ROCm column where we want 'X' for crashes/missing if Triton has data
-                let val2;
-                if ((m.rocm === null || m.rocm === 0) && m.triton > 0) {
-                    val2 = '<span class="val-na" style="color: #ef4444; font-weight:bold;">X</span>';
-                } else {
-                    val2 = formatVal(m.rocm, unit);
+                // Data Cells
+                cols.forEach(c => {
+                    let val = null;
+                    if (c.id === "tp1_triton") val = m.results[1]?.triton;
+                    if (c.id === "tp1_rocm") val = m.results[1]?.rocm;
+                    if (c.id === "tp2_triton") val = m.results[2]?.triton;
+                    if (c.id === "tp2_rocm") val = m.results[2]?.rocm;
+
+                    const bg = c.id.startsWith("tp2") ? 'style="background:#fbfdff;"' : "";
+                    rowHtml += `<td class="col-data" ${bg}>${formatVal(val, unit)}</td>`;
+                });
+
+                // Diff Column Data
+                if (cols.length === 2) {
+                    const v1 = getVal(m, cols[0].id);
+                    const v2 = getVal(m, cols[1].id);
+                    rowHtml += `<td class="col-data col-diff">${formatDiff(v1, v2)}</td>`;
                 }
 
-                tr.innerHTML = `
-                <td>
-                    <div class="model-cell">
-                        <a href="https://huggingface.co/${m.name}" target="_blank" class="model-name" style="text-decoration: none; color: inherit; border-bottom: 1px dotted #ccc;">${m.name}</a>
-                        <div class="model-meta">${metaHtml}</div>
-                    </div>
-                </td>
-                <td class="col-data">${val1}</td>
-                <td class="col-data">${val2}</td>
-            `;
+                tr.innerHTML = rowHtml;
                 tbody.appendChild(tr);
             });
+
             table.appendChild(tbody);
             tableResp.appendChild(table);
             card.appendChild(tableResp);
-
             container.appendChild(card);
         }
 
-        function formatVal(v, unit) {
-            if (v === null || v === undefined) return '<span class="val-na">N/A</span>';
-            if (v === 0) return '<span class="val-na">FAIL</span>';
-            return `<span class="val">${v.toFixed(2)}<span style="font-size:0.8em; color:#888;">${unit}</span></span>`;
+        // Helper to get value safely
+        function getVal(m, colId) {
+            if (colId === "tp1_triton") return m.results[1]?.triton;
+            if (colId === "tp1_rocm") return m.results[1]?.rocm;
+            if (colId === "tp2_triton") return m.results[2]?.triton;
+            if (colId === "tp2_rocm") return m.results[2]?.rocm;
+            return null;
         }
 
-        // Modal Logic
-        function openModal(testName) {
-            const meta = getBenchmarkMeta(testName);
-            if (!meta) return;
+        function formatDiff(v1, v2) {
+            if (v1 === null || v2 === null || v1 === undefined || v2 === undefined || v1 === 0) return '<span class="val-na">-</span>';
+            const diff = ((v2 - v1) / v1) * 100;
+            const sign = diff > 0 ? "+" : "";
+            const cls = diff > 0.5 ? "val-pos" : (diff < -0.5 ? "val-neg" : "val-neu");
+            return `<span class="${cls}">${sign}${diff.toFixed(1)}%</span>`;
+        }
 
-            $('modalTitle').textContent = testName;
-
-            let content = `
-            <div class="modal-section">
-                <h4>What is this?</h4>
-                <p>${meta.desc}</p>
-            </div>
-            <div class="modal-section">
-                <h4>Why it matters?</h4>
-                <p>${meta.usecase}</p>
-            </div>`;
-
-            if (meta.context) {
-                content += `
-                <div class="modal-section">
-                    <h4>Terminology</h4>
-                    <p>${meta.context}</p>
-                </div>`;
-            }
-
-            content += `
-            <div class="modal-section">
-                <h4>Technical Details</h4>
-                <div class="code-block">${meta.details}</div>
-            </div>
-            `;
-
-            $('modalContent').innerHTML = content;
+        // --- Basic Modal Implementation ---
+        function openModal(name) {
+            const m = getMeta(name);
+            $('modalTitle').textContent = name;
+            $('modalContent').innerHTML = `
+                <div class="modal-section"><h4>About</h4><p>${m.desc}</p></div>
+                <div class="modal-section"><h4>Usage</h4><p>${m.usecase}</p></div>
+                <div class="modal-section"><h4>Details</h4><div class="code-block">${m.details}</div></div>
+             `;
             $('modalOverlay').classList.add('active');
         }
-
-        function closeModal() {
-            $('modalOverlay').classList.remove('active');
-        }
-
-        // Close on click outside
-        $('modalOverlay').addEventListener('click', e => {
-            if (e.target === $('modalOverlay')) closeModal();
-        });
-
-        // Close on Escape
-        document.addEventListener('keydown', e => {
-            if (e.key === "Escape") closeModal();
-        });
+        function closeModal() { $('modalOverlay').classList.remove('active'); }
+        $('modalOverlay').addEventListener('click', e => { if (e.target === $('modalOverlay')) closeModal(); });
+        document.addEventListener('keydown', e => { if (e.key === "Escape") closeModal(); });
 
         init();
     </script>

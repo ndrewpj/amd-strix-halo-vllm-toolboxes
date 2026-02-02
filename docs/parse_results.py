@@ -71,6 +71,10 @@ def parse_logs():
                 model_display = model_part.replace("_", "/", 1)
             else:
                 model_display = model_part
+            
+            # Normalize: Remove _cluster suffix if present so grouping works
+            if model_display.endswith("_cluster"):
+                model_display = model_display[:-8]
                 
             params_b, quant = extract_meta(model_display)
             
@@ -89,7 +93,8 @@ def parse_logs():
             if "throughput" in fname:
                 tps = data.get("tokens_per_second", 0)
                 run = base_run.copy()
-                run["test"] = f"Throughput (TP{tp})"
+                run["test"] = "Throughput"
+                run["tp"] = tp
                 run["tps_mean"] = tps
                 if tps == 0 or (isinstance(data, dict) and "error" in str(data).lower()): # checking if error string is in json dump
                      run["error"] = True
@@ -111,13 +116,15 @@ def parse_logs():
                 
                 # TTFT
                 r1 = base_run.copy()
-                r1["test"] = f"TTFT (TP{tp}) @ QPS {qps}"
+                r1["test"] = f"TTFT (QPS {qps})"
+                r1["tp"] = tp
                 r1["tps_mean"] = ttft
                 runs.append(r1)
                 
                 # TPOT
                 r2 = base_run.copy()
-                r2["test"] = f"TPOT (TP{tp}) @ QPS {qps}"
+                r2["test"] = f"TPOT (QPS {qps})"
+                r2["tp"] = tp
                 r2["tps_mean"] = tpot
                 runs.append(r2)
 
