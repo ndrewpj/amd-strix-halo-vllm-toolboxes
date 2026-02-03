@@ -163,12 +163,16 @@ def get_model_args(model):
     
     return cmd
 
-def run_bench_set(model, backend_name, output_dir, extra_env=None):
+def get_benchmark_output_file(model, output_dir):
     model_safe = model.replace("/", "_")
+    output_dir_path = Path(output_dir)
+    return output_dir_path / f"{model_safe}_cluster_tp{CLUSTER_TP}_throughput.json"
+
+def run_bench_set(model, backend_name, output_dir, extra_env=None):
     output_dir_path = Path(output_dir)
     output_dir_path.mkdir(parents=True, exist_ok=True)
     
-    output_file = output_dir_path / f"{model_safe}_cluster_tp{CLUSTER_TP}_throughput.json"
+    output_file = get_benchmark_output_file(model, output_dir)
     
     if output_file.exists():
         log(f"SKIP {model} [{backend_name}] (Result exists)")
@@ -216,21 +220,27 @@ def run_bench_set(model, backend_name, output_dir, extra_env=None):
 
 def run_cluster_throughput(model):
     # 1. Default Run (Triton)
-    restart_cluster()
-    run_bench_set(
-        model, 
-        "Default", 
-        RESULTS_DIR
-    )
+    if get_benchmark_output_file(model, RESULTS_DIR).exists():
+        log(f"SKIP {model} [Default] (Result exists)")
+    else:
+        restart_cluster()
+        run_bench_set(
+            model, 
+            "Default", 
+            RESULTS_DIR
+        )
     
     # 2. ROCm Attention Run
-    restart_cluster()
-    run_bench_set(
-        model,
-        "ROCm-Attn",
-        "benchmark_results_rocm",
-        extra_env={}
-    )
+    if get_benchmark_output_file(model, "benchmark_results_rocm").exists():
+        log(f"SKIP {model} [ROCm-Attn] (Result exists)")
+    else:
+        restart_cluster()
+        run_bench_set(
+            model,
+            "ROCm-Attn",
+            "benchmark_results_rocm",
+            extra_env={}
+        )
 
 
 def print_summary():
