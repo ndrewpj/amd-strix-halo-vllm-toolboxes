@@ -45,6 +45,8 @@ This guide details how to configure a two-node **AMD Strix Halo** cluster linked
 
 ## 2. Concepts & Architecture
 
+![concepts](concepts.png)
+
 To fully utilize the Strix Halo cluster, it is helpful to understand the technologies involved:
 
 *   **vLLM**: A high-performance inference engine. To run models larger than a single GPU (or APU) can handle, it splits the model using **Tensor Parallelism (TP)**.
@@ -55,14 +57,19 @@ To fully utilize the Strix Halo cluster, it is helpful to understand the technol
     *   **With RDMA**: Latency is ~5µs.
     *   **Why it matters**: For interactive token generation, high latency kills performance. RoCE makes the two nodes feel like a single machine.
 
+
 ---
 
 ## 3. Hardware Prerequisites
+
+![cluster](cluster.png)
+
 
 *   **Nodes**: 2x [Framework Desktop Mainboards](https://frame.work/gb/en/products/framework-desktop-mainboard-amd-ryzen-ai-max-300-series?v=FRAFMK0006) with AMD Ryzen AI MAX+ "Strix Halo", 128GB of Unified Memory.
 *   **Network Cards**: [Intel Ethernet Controller E810-CQDA1](https://www.intel.com/content/www/us/en/products/sku/192558/intel-ethernet-network-adapter-e810cqda1/specifications.html) (or similar 100GbE QSFP28).
 *   **Connection**: Direct Attach Copper (DAC) cable (e.g., [QSFPTEK 100G QSFP28 DAC](https://www.amazon.co.uk/dp/B09F32F7VK)). No switch required for 2 nodes.
 *   **PCIe Note**: The Framework motherboard PCIe slot is physically **x4**, so a riser is required to plug in a 16x card (e.g., [CY PCI-E Express 4x to 16x Extender](https://www.amazon.co.uk/dp/B0837FZFJ6)). **Test Setup Note:** One of the boards in this setup has a modified PCIe slot (cut by Framework using an ultrasonic knife) to accept x16 cards directly. **This is not recommended for users.** Risers are the cheaper, safer, and easier solution. Performance is identical (~50Gbps bandwidth, ~5µs latency).
+
 
 ---
 
