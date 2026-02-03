@@ -21,6 +21,7 @@ This guide details how to configure a two-node **AMD Strix Halo** cluster linked
     *   [6.1 Setup & Verify](#61-setup--verify)
     *   [6.2 Launching vLLM](#62-launching-vllm)
 7. [Troubleshooting](#7-troubleshooting)
+8. [References & Acknowledgements](#8-references--acknowledgements)
 
 ---
 
@@ -318,3 +319,10 @@ Once the cluster is active (checked via Option 3):
 
 ### Firmware
 If you see link issues, ensure your Intel E810 firmware is up to date using the Intel standard tools.
+
+---
+
+## 8. References & Acknowledgements
+
+*   **Reddit - Strix Halo Batching with Tensor Parallel**: [Thread by Hungry_Elk_3276](https://www.reddit.com/r/LocalLLaMA/comments/1p8nped/strix_halo_batching_with_tensor_parallel_and/)
+    *   Special thanks to user **Hungry_Elk_3276** for their initial experiments with vLLM RDMA, which highlighted the missing `gfx1151` support in upstream RCCL.
