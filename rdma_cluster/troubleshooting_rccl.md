@@ -43,7 +43,7 @@ I have established a stable low-latency RDMA link and a functional Ray cluster o
 *   **Interconnect:** Direct connection via Intel Ethernet Controller E810-CQDA1.
 *   **Protocol:** RoCE v2 (RDMA over Converged Ethernet).
 
-### Host Software (Fedora Rawhide)
+### Host Software (Fedora)
 | Node | Hostname | Kernel | OS | IP (RDMA Interface) |
 | :--- | :--- | :--- | :--- | :--- |
 | **Node 1** | `frmwk-dsk` | `6.18.5-200.fc43.x86_64` | Fedora Linux 43 | `192.168.100.1/30` |

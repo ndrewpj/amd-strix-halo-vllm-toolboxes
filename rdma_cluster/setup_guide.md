@@ -73,8 +73,8 @@ Perform these steps on the **Host OS** (Fedora 43) of **both nodes**.
 
 | Node | Kernel | OS | IP (RDMA Interface) |
 | :--- | :--- | :--- | :--- |
-| **Node 1** | `6.18.5-200.fc43.x86_64` | Fedora Linux 43 (Rawhide) | `192.168.100.1/30` |
-| **Node 2** | `6.18.6-200.fc43.x86_64` | Fedora Linux 43 (Rawhide) | `192.168.100.2/30` |
+| **Node 1** | `6.18.5-200.fc43.x86_64` | Fedora Linux 43 | `192.168.100.1/30` |
+| **Node 2** | `6.18.6-200.fc43.x86_64` | Fedora Linux 43 | `192.168.100.2/30` |
 
 > **Note:** These specific kernel versions were verified to work. Fedora 43 is recommended.
 

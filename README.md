@@ -176,17 +176,17 @@ This should work on any Strix Halo. For a complete list of available hardware, s
 | **CPU**           | Ryzen AI MAX+ 395 "Strix Halo"                              |
 | **System Memory** | 128 GB RAM                                                  |
 | **GPU Memory**    | 512 MB allocated in BIOS                                    |
-| **Host OS**       | Fedora 43 (Rawhide), Linux 6.18.5-200.fc43.x86_64            |
+| **Host OS**       | Fedora 43, Linux 6.18.5-200.fc43.x86_64            |
 
 ### 6.2 Kernel Parameters (tested on Fedora 42)
 
 Add these boot parameters to enable unified memory while reserving a minimum of 4 GiB for the OS (max 124 GiB for iGPU):
 
-amd_iommu=pt amdgpu.gttsize=126976 ttm.pages_limit=32505856
+iommu=pt amdgpu.gttsize=126976 ttm.pages_limit=32505856
 
 | Parameter                   | Purpose                                                                                    |
 |-----------------------------|--------------------------------------------------------------------------------------------|
-| `amd_iommu=off`              | Disables AMD IOMMU to reduce overhead for better performance               |
+| `iommu=pt`              | Sets IOMMU to "Pass-Through" mode. This helps performance, reducing overhead for both the RDMA NIC and the iGPU unified memory access.               |
 | `amdgpu.gttsize=126976`     | Caps GPU unified memory to 124 GiB; 126976 MiB ÷ 1024 = 124 GiB                            |
 | `ttm.pages_limit=32505856`  | Caps pinned memory to 124 GiB; 32505856 × 4 KiB = 126976 MiB = 124 GiB                     |
 
