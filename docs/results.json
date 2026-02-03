@@ -12,7 +12,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 238.92735772921657
+      "tps_mean": 383.3285005130725
     },
     {
       "model": "google/gemma-3-12b-it",
@@ -26,7 +26,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 138.28298716107304
+      "tps_mean": 169.75141153501525
     },
     {
       "model": "Qwen/Qwen3-14B-AWQ",
@@ -40,7 +40,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 83.68710295019198
+      "tps_mean": 168.9724830093454
     },
     {
       "model": "openai/gpt-oss-20b",
@@ -54,7 +54,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 185.3668705592303
+      "tps_mean": 430.8537270233502
     },
     {
       "model": "openai/gpt-oss-120b",
@@ -68,7 +68,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 70.98811455236003
+      "tps_mean": 77.93077982357597
     },
     {
       "model": "zai-org/GLM-4.7-Flash",
@@ -82,7 +82,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 133.7890668441555
+      "tps_mean": 246.02994547299596
     },
     {
       "model": "btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-4bit",
@@ -96,7 +96,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 117.75790760733192
+      "tps_mean": 227.90361622402403
     },
     {
       "model": "btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-8bit",
@@ -110,7 +110,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 86.97761646092924
+      "tps_mean": 200.1426829468909
     },
     {
       "model": "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16",
@@ -124,7 +124,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 71.52372211759099
+      "tps_mean": 132.2599488751683
     },
     {
       "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
@@ -138,7 +138,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 385.96636603292677
+      "tps_mean": 596.5891209659404
     },
     {
       "model": "google/gemma-3-12b-it",
@@ -152,7 +152,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 244.97127724647316
+      "tps_mean": 294.9472545848014
     },
     {
       "model": "Qwen/Qwen3-14B-AWQ",
@@ -166,7 +166,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 328.49937859629955
+      "tps_mean": 348.0799308087054
     },
     {
       "model": "openai/gpt-oss-20b",
@@ -180,7 +180,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 276.48063742763867
+      "tps_mean": 593.7843034224891
     },
     {
       "model": "openai/gpt-oss-120b",
@@ -194,7 +194,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 117.11822522607781
+      "tps_mean": 112.4781801162827
     },
     {
       "model": "zai-org/GLM-4.7-Flash",
@@ -208,7 +208,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 200.2551557455423
+      "tps_mean": 346.0061963818796
     },
     {
       "model": "btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-4bit",
@@ -222,7 +222,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 170.28562676904787
+      "tps_mean": 320.69249844623016
     },
     {
       "model": "btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-8bit",
@@ -236,7 +236,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 130.40765123003763
+      "tps_mean": 274.7000183491961
     },
     {
       "model": "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16",
@@ -250,7 +250,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 98.44491320703105
+      "tps_mean": 167.00232766189475
     },
     {
       "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
@@ -264,7 +264,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 241.1478963701438
+      "tps_mean": 452.7925628873698
     },
     {
       "model": "google/gemma-3-12b-it",
@@ -278,7 +278,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 180.0947121704009
+      "tps_mean": 292.4074663029466
     },
     {
       "model": "Qwen/Qwen3-14B-AWQ",
@@ -292,7 +292,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 86.05445772580717
+      "tps_mean": 190.86242019407229
     },
     {
       "model": "openai/gpt-oss-20b",
@@ -306,7 +306,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 185.01465145154089
+      "tps_mean": 440.75738846836555
     },
     {
       "model": "openai/gpt-oss-120b",
@@ -320,7 +320,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 67.92779311425312
+      "tps_mean": 76.44313314138553
     },
     {
       "model": "btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-4bit",
@@ -334,7 +334,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 121.19378360261106
+      "tps_mean": 229.9835374194385
     },
     {
       "model": "btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-8bit",
@@ -348,7 +348,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 89.76589360109976
+      "tps_mean": 203.38751203489863
     },
     {
       "model": "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16",
@@ -362,7 +362,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 1,
-      "tps_mean": 70.75103526522766
+      "tps_mean": 135.3839809398758
     },
     {
       "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
@@ -376,7 +376,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 381.7346838742502
+      "tps_mean": 649.02791593759
     },
     {
       "model": "google/gemma-3-12b-it",
@@ -390,7 +390,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 263.9412467646666
+      "tps_mean": 403.09652364564084
     },
     {
       "model": "Qwen/Qwen3-14B-AWQ",
@@ -404,7 +404,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 321.2769089381971
+      "tps_mean": 371.4058491591393
     },
     {
       "model": "openai/gpt-oss-20b",
@@ -418,7 +418,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 287.95959208958226
+      "tps_mean": 597.5787987620997
     },
     {
       "model": "openai/gpt-oss-120b",
@@ -432,7 +432,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 120.90976614975652
+      "tps_mean": 111.8113988472388
     },
     {
       "model": "btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-4bit",
@@ -446,7 +446,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 171.7665512553609
+      "tps_mean": 315.906032423287
     },
     {
       "model": "btbtyler09/Qwen3-Coder-30B-A3B-Instruct-gptq-8bit",
@@ -460,7 +460,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 131.2917933257513
+      "tps_mean": 292.0384117325289
     },
     {
       "model": "dazipe/Qwen3-Next-80B-A3B-Instruct-GPTQ-Int4A16",
@@ -474,7 +474,7 @@
       "error": false,
       "test": "Throughput",
       "tp": 2,
-      "tps_mean": 100.8896816189698
+      "tps_mean": 165.5348293928834
     }
   ]
 }
