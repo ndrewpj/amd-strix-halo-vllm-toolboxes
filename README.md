@@ -13,6 +13,16 @@ An **Fedora 43** Docker/Podman container that is **Toolbx-compatible** (usable a
 
 ---
 
+### 📦 Project Context
+
+This repository is part of the **[Strix Halo AI Toolboxes](https://strix-halo-toolboxes.com)** project. Check out the website for an overview of all toolboxes, tutorials, and host configuration guides.
+
+### ❤️ Support
+
+This is a hobby project maintained in my spare time. If you find these toolboxes and tutorials useful, you can **[buy me a coffee](https://buymeacoffee.com/dcapitellau)** to support the work! ☕
+
+---
+
 ## Table of Contents
 
 * [Tested Models (Benchmarks)](#tested-models-benchmarks)
