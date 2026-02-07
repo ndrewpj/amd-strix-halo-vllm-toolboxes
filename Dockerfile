@@ -127,6 +127,7 @@ COPY scripts/99-toolbox-banner.sh /etc/profile.d/99-toolbox-banner.sh
 COPY scripts/zz-venv-last.sh /etc/profile.d/zz-venv-last.sh
 COPY scripts/start_vllm.py /opt/start-vllm
 COPY scripts/start_vllm_cluster.py /opt/start-vllm-cluster
+COPY scripts/measure_bandwidth.sh /opt/measure_bandwidth.sh
 COPY scripts/cluster_manager.py /opt/cluster_manager.py
 COPY scripts/models.py /opt/models.py
 
